@@ -1,0 +1,2085 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Bible Challenge — TruthPath Éditions</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700;9..144,900&family=Nunito:wght@500;600;700;800;900&display=swap');
+
+  html, body {
+    margin: 0;
+    min-height: 100vh;
+    background: #d9dbe6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 10px;
+    font-family: 'Nunito', sans-serif;
+  }
+  * { box-sizing: border-box; }
+
+  .bc-root {
+    --navy: #16224f;
+    --navy-deep: #0a1130;
+    --gold: #d4af37;
+    --gold-light: #f2dd97;
+    --steel: #3a5a8c;
+    --bronze: #a97142;
+    --ink: #1b2035;
+    --parchment: #f7f5ef;
+    --red: #a32020;
+    --green: #2e8b57;
+    --amber: #c9932a;
+    width: 100%;
+    max-width: 430px;
+    min-height: 700px;
+    background: var(--parchment);
+    border-radius: 24px;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(10,17,48,0.35);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bc-screen { display: none; flex-direction: column; flex: 1; }
+  .bc-screen.active { display: flex; }
+
+  /* ============ TOPBAR ============ */
+  .bc-topbar {
+    background: linear-gradient(135deg, var(--navy) 0%, var(--navy-deep) 100%);
+    color: #fff;
+    padding: 20px 20px 16px;
+    position: relative;
+    overflow: hidden;
+  }
+  .bc-topbar::after {
+    content: '';
+    position: absolute; top: -40px; right: -40px;
+    width: 130px; height: 130px; border-radius: 50%;
+    background: var(--gold); opacity: 0.13;
+  }
+  .bc-eyebrow { font-size: 11px; font-weight: 800; color: var(--gold); letter-spacing: 0.03em; }
+  .bc-h1 { font-family: 'Fraunces', serif; font-weight: 900; font-size: 30px; margin: 4px 0 0; line-height: 1; }
+  .bc-h1 em { color: var(--gold); font-style: italic; font-weight: 600; }
+
+  .bc-profile-strip {
+    margin-top: 16px;
+    display: flex; gap: 8px;
+    position: relative; z-index: 1;
+  }
+  .bc-profile-pill {
+    flex: 1;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(212,175,55,0.35);
+    border-radius: 12px;
+    padding: 8px 6px;
+    text-align: center;
+  }
+  .bc-profile-pill b { display: block; font-family: 'Fraunces', serif; font-size: 17px; color: var(--gold); }
+  .bc-profile-pill span { font-size: 9px; color: rgba(255,255,255,0.75); }
+  .bc-profile-pill.clickable { cursor: pointer; }
+
+  .bc-leaderboard-cta {
+    margin-top: 10px;
+    width: 100%;
+    background: rgba(212,175,55,0.12);
+    border: 1px solid rgba(212,175,55,0.4);
+    color: var(--gold);
+    border-radius: 12px;
+    padding: 10px;
+    font-weight: 800;
+    font-size: 12.5px;
+    cursor: pointer;
+    position: relative; z-index: 1;
+  }
+
+  .bc-back-row {
+    display: flex; align-items: center; gap: 10px;
+    position: relative; z-index: 1;
+  }
+  .bc-back-btn {
+    background: rgba(255,255,255,0.14);
+    border: none; color: #fff; width: 32px; height: 32px; border-radius: 9px;
+    font-size: 16px; cursor: pointer; flex-shrink: 0;
+  }
+
+  .bc-quick-row { display: flex; gap: 8px; margin-top: 8px; position: relative; z-index: 1; }
+  .bc-quick-btn {
+    flex: 1; background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.16);
+    color: rgba(255,255,255,0.85); border-radius: 12px; padding: 9px; font-weight: 700; font-size: 12px; cursor: pointer;
+  }
+
+  .bc-boutique-teaser {
+    margin-top: 16px; background: #fff; border: 1px solid #e8e6dc; border-radius: 14px;
+    padding: 14px 16px; display: flex; align-items: center; justify-content: space-between; gap: 10px; cursor: pointer;
+  }
+  .bc-boutique-teaser-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 13.5px; color: var(--ink); }
+  .bc-boutique-teaser-desc { font-size: 10.5px; color: #7c7c8e; margin-top: 3px; }
+  .bc-boutique-teaser-arrow { font-size: 18px; color: var(--gold); flex-shrink: 0; }
+
+  /* ============ PROFIL SCREEN ============ */
+  #bc-profil-body { padding: 18px; flex: 1; overflow-y: auto; }
+  .bc-profil-input {
+    width: 100%; margin-top: 8px; background: #fff; border: 2px solid #e6e3d8; border-radius: 12px;
+    padding: 12px 14px; font-size: 14.5px; font-weight: 700; color: var(--ink);
+  }
+  .bc-profil-stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 8px; }
+  .bc-profil-stat { background: #fff; border: 1px solid #e8e6dc; border-radius: 13px; padding: 14px; text-align: center; }
+  .bc-profil-stat b { display: block; font-family: 'Fraunces', serif; font-size: 20px; color: var(--navy); }
+  .bc-profil-stat span { font-size: 10.5px; color: #7c7c8e; }
+  .bc-profil-cat-row {
+    display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #e8e6dc;
+    border-radius: 12px; padding: 10px 14px; margin-top: 8px; font-size: 13px; font-weight: 700; color: var(--ink);
+  }
+  .bc-badges-link {
+    width: 100%; margin-top: 22px; background: var(--gold-light); border: none; color: var(--navy-deep);
+    border-radius: 12px; padding: 13px; font-weight: 800; font-size: 13.5px; cursor: pointer;
+  }
+  .bc-reset-btn {
+    width: 100%; margin-top: 10px; background: transparent; border: 1px solid #e0a0a0; color: var(--red);
+    border-radius: 12px; padding: 12px; font-weight: 700; font-size: 12.5px; cursor: pointer;
+  }
+
+  /* ============ BOUTIQUE SCREEN ============ */
+  #bc-boutique-body { padding: 18px; flex: 1; overflow-y: auto; }
+  .bc-product-card { background: #fff; border: 1px solid #e8e6dc; border-radius: 16px; padding: 20px; margin-bottom: 14px; text-align: center; }
+  .bc-product-card.soon { opacity: 0.7; }
+  .bc-product-emoji { font-size: 34px; }
+  .bc-product-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--ink); margin-top: 8px; }
+  .bc-product-desc { font-size: 12px; color: #7c7c8e; margin-top: 8px; line-height: 1.5; }
+  .bc-product-btn {
+    display: inline-block; margin-top: 14px; background: var(--navy); color: #fff; text-decoration: none;
+    border-radius: 999px; padding: 12px 20px; font-weight: 800; font-size: 13px;
+  }
+  .bc-product-soon-tag {
+    display: inline-block; margin-top: 14px; background: #e6e3d8; color: #7c7c8e;
+    border-radius: 999px; padding: 8px 16px; font-weight: 700; font-size: 11.5px;
+  }
+
+  /* ============ HOME ============ */
+  #bc-home-body { padding: 18px 18px 20px; flex: 1; overflow-y: auto; }
+  .bc-section-label { font-weight: 800; font-size: 13px; color: var(--ink); margin: 4px 0 10px; }
+
+  .bc-cat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .bc-cat-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 15px 13px;
+    border: 1px solid #e8e6dc;
+    cursor: pointer;
+    text-align: left;
+    box-shadow: 0 6px 16px rgba(10,17,48,0.06);
+  }
+  .bc-cat-icon {
+    width: 38px; height: 38px; border-radius: 11px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 19px; margin-bottom: 10px;
+  }
+  .bc-cat-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15.5px; color: var(--ink); line-height: 1.15; }
+  .bc-cat-age { font-size: 10.5px; color: #7c7c8e; margin-top: 4px; font-weight: 700; }
+  .bc-cat-diff {
+    display: inline-block; margin-top: 9px;
+    font-size: 9.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px; color: #fff;
+  }
+
+  /* ============ CATEGORY / MODE PICKER ============ */
+  #bc-cat-body { padding: 18px; flex: 1; overflow-y: auto; }
+  .bc-mode-card {
+    background: #fff;
+    border: 1px solid #e8e6dc;
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: 0 6px 16px rgba(10,17,48,0.05);
+  }
+  .bc-mode-emoji { font-size: 26px; flex-shrink: 0; }
+  .bc-mode-info { flex: 1; }
+  .bc-mode-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 15px; color: var(--ink); }
+  .bc-mode-desc { font-size: 11.5px; color: #7c7c8e; margin-top: 2px; }
+  .bc-mode-play {
+    background: var(--navy); color: #fff; border: none; border-radius: 999px;
+    padding: 9px 15px; font-weight: 800; font-size: 12.5px; cursor: pointer; flex-shrink: 0;
+  }
+  .bc-partie-tag {
+    display: inline-block; margin-top: 4px; font-size: 10px; font-weight: 800; color: var(--steel);
+    background: #eef2f8; border-radius: 999px; padding: 2px 9px;
+  }
+  .bc-partie-tag.bonus { color: var(--bronze); background: #f7efe4; }
+
+  /* ============ INSTRUCTIONS SCREEN ============ */
+  #bc-instr-body {
+    flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 40px 26px 26px; background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%); color: #fff;
+  }
+  .bc-instr-emoji { font-size: 42px; }
+  .bc-instr-tag {
+    margin-top: 10px; font-size: 11.5px; font-weight: 800; color: var(--gold);
+    background: rgba(212,175,55,0.14); border: 1px solid rgba(212,175,55,0.4); border-radius: 999px; padding: 5px 14px;
+  }
+  .bc-instr-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 24px; margin-top: 14px; }
+  .bc-instr-card {
+    margin-top: 24px; background: rgba(255,255,255,0.07); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 16px; padding: 20px; text-align: left;
+  }
+  .bc-instr-label { font-weight: 800; font-size: 12.5px; color: var(--gold); margin-bottom: 8px; }
+  .bc-instr-text { font-size: 14px; line-height: 1.6; color: rgba(255,255,255,0.9); }
+  .bc-instr-start-btn {
+    margin-top: 28px; width: 100%; background: var(--gold); color: var(--navy-deep); border: none;
+    border-radius: 999px; padding: 16px; font-weight: 800; font-size: 15.5px; cursor: pointer;
+  }
+  .bc-instr-back {
+    margin-top: 14px; width: auto; background: transparent; border: none; color: rgba(255,255,255,0.6);
+    font-weight: 700; font-size: 12.5px; padding: 8px;
+  }
+
+  /* ============ TABLE DES MATIÈRES ============ */
+  #bc-toc-body { padding: 18px; flex: 1; overflow-y: auto; }
+  .bc-toc-intro { font-size: 12px; color: #7c7c8e; line-height: 1.5; margin-bottom: 16px; }
+  .bc-toc-section { margin-bottom: 18px; }
+  .bc-toc-section-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 8px;
+  }
+  .bc-toc-section-num {
+    width: 30px; height: 30px; border-radius: 9px; background: var(--navy); color: #fff;
+    display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 800; font-size: 14px; flex-shrink: 0;
+  }
+  .bc-toc-section-title { font-family: 'Fraunces', serif; font-weight: 700; font-size: 14.5px; color: var(--ink); }
+  .bc-toc-section-age { font-size: 10.5px; color: #9a9aa8; }
+  .bc-toc-partie-row {
+    display: flex; align-items: center; justify-content: space-between; background: #fff; border: 1px solid #e8e6dc;
+    border-radius: 12px; padding: 11px 14px; margin-bottom: 7px; margin-left: 12px;
+  }
+  .bc-toc-partie-row.clickable { cursor: pointer; }
+  .bc-toc-partie-row.clickable:active { background: #f7f5ef; }
+  .bc-toc-partie-name { font-size: 12.5px; font-weight: 700; color: var(--ink); }
+  .bc-toc-partie-range { font-size: 10px; color: #9a9aa8; margin-top: 2px; }
+  .bc-toc-partie-arrow { color: var(--gold); font-size: 14px; }
+  .bc-toc-partie-locked { color: #c2c2ca; font-size: 10px; font-weight: 700; }
+
+  /* ============ GAME ============ */
+  #bc-game { background: var(--parchment); }
+  .bc-game-top { padding: 16px 20px 0; }
+  .bc-top-row { display: flex; align-items: center; gap: 12px; }
+  .bc-progress-track { flex: 1; height: 7px; background: #e6e3d8; border-radius: 99px; overflow: hidden; }
+  .bc-progress-fill { height: 100%; background: linear-gradient(90deg, var(--steel), var(--gold)); border-radius: 99px; transition: width .35s ease; }
+  .bc-qcount { font-weight: 800; font-size: 12.5px; color: var(--navy); white-space: nowrap; }
+  .bc-streak-row { display: flex; justify-content: center; margin-top: 8px; }
+  .bc-streak-pill {
+    background: linear-gradient(90deg, var(--bronze), var(--gold));
+    color: #2a1a04; font-weight: 800; font-size: 11.5px; padding: 4px 12px; border-radius: 999px;
+    display: none; align-items: center; gap: 5px;
+  }
+  .bc-streak-pill.show { display: inline-flex; }
+
+  .bc-game-body { padding: 10px 20px 24px; flex: 1; }
+
+  .bc-timer-wrap { margin: 10px auto 4px; width: 56px; height: 56px; position: relative; }
+  .bc-timer-wrap svg { transform: rotate(-90deg); width: 56px; height: 56px; }
+  .bc-timer-wrap circle { fill: none; stroke-width: 5.5; }
+  .bc-timer-bg { stroke: #e6e3d8; }
+  .bc-timer-fg { stroke: var(--steel); stroke-linecap: round; transition: stroke-dashoffset 1s linear, stroke .3s; }
+  .bc-timer-num { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-family: 'Fraunces', serif; font-weight: 700; font-size: 16px; color: var(--navy); }
+
+  .bc-q-card {
+    margin-top: 14px; background: var(--navy); border-radius: 18px; padding: 20px 18px; color: #fff;
+    box-shadow: 0 10px 24px rgba(22,34,79,0.3);
+  }
+  .bc-q-topic { font-size: 10.5px; font-weight: 800; color: var(--gold); letter-spacing: 0.03em; margin-bottom: 8px; }
+  .bc-q-text { font-family: 'Fraunces', serif; font-weight: 600; font-size: 19px; line-height: 1.3; }
+
+  .bc-answers { margin-top: 16px; display: flex; flex-direction: column; gap: 10px; }
+  .bc-answer-btn {
+    text-align: left; background: #fff; border: 2px solid #e6e3d8; border-radius: 13px;
+    padding: 13px 15px; font-weight: 700; font-size: 14.5px; color: var(--ink);
+    cursor: pointer; display: flex; align-items: center; gap: 11px;
+  }
+  .bc-answer-letter {
+    width: 24px; height: 24px; border-radius: 7px; background: var(--gold-light); color: var(--navy-deep);
+    font-size: 11.5px; font-weight: 800; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .bc-answer-btn.correct { border-color: var(--green); background: #eef8f1; }
+  .bc-answer-btn.correct .bc-answer-letter { background: var(--green); color: #fff; }
+  .bc-answer-btn.wrong { border-color: var(--red); background: #fbeceb; }
+  .bc-answer-btn.wrong .bc-answer-letter { background: var(--red); color: #fff; }
+  .bc-answer-btn.dim { opacity: 0.4; }
+  .bc-answer-btn:disabled { cursor: default; }
+
+  .bc-vf-row { display: flex; gap: 10px; margin-top: 16px; }
+  .bc-vf-btn {
+    flex: 1; background: #fff; border: 2px solid #e6e3d8; border-radius: 13px; padding: 16px;
+    font-weight: 800; font-size: 15px; cursor: pointer; color: var(--ink);
+  }
+  .bc-vf-btn.correct { border-color: var(--green); background: #eef8f1; color: #1e5e3d; }
+  .bc-vf-btn.wrong { border-color: var(--red); background: #fbeceb; color: #7a231b; }
+  .bc-vf-btn.dim { opacity: 0.4; }
+
+  .bc-feedback { margin-top: 14px; border-radius: 13px; padding: 13px 15px; font-size: 13px; line-height: 1.5; display: none; }
+  .bc-feedback.show { display: block; }
+  .bc-feedback.ok { background: #eef8f1; color: #1e5e3d; border: 1px solid #cdeada; }
+  .bc-feedback.ko { background: #fbeceb; color: #7a231b; border: 1px solid #f3cfcb; }
+  .bc-feedback b { display: block; margin-bottom: 3px; font-family: 'Fraunces', serif; font-size: 14px; }
+  .bc-streak-flag { margin-top: 8px; background: rgba(212,175,55,0.18); border: 1px solid rgba(212,175,55,0.5); color: #8a6d1f; border-radius: 10px; padding: 8px 12px; font-size: 12.5px; font-weight: 800; }
+
+  .bc-next-btn {
+    margin-top: 14px; width: 100%; background: var(--navy-deep); color: #fff; border: none;
+    border-radius: 999px; padding: 14px; font-weight: 800; font-size: 14.5px; cursor: pointer; display: none;
+  }
+  .bc-next-btn.show { display: block; }
+
+  /* versets à compléter specific */
+  .bc-verset-clue { margin-top: 6px; font-family: 'Fraunces', serif; font-size: 17px; line-height: 1.5; color: #fff; font-style: italic; }
+  .bc-verset-label { margin-top: 14px; font-size: 12px; font-weight: 800; color: rgba(255,255,255,0.7); }
+  .bc-verset-score-col { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .bc-verset-btn {
+    display: flex; align-items: center; justify-content: space-between; border: none; border-radius: 12px;
+    padding: 13px 15px; font-weight: 700; font-size: 13px; cursor: pointer; text-align: left;
+  }
+  .bc-verset-btn span { font-weight: 800; }
+  .bc-verset-btn.full { background: var(--green); color: #fff; }
+  .bc-verset-btn.partial { background: var(--gold-light); color: var(--navy-deep); }
+  .bc-verset-btn.none { background: rgba(255,255,255,0.1); color: rgba(255,255,255,0.8); }
+  .bc-verset-btn:disabled { opacity: 0.5; cursor: default; }
+
+  /* dîner biblique / réflexion specific */
+  .bc-reflexion-hint { margin-top: 16px; font-size: 12.5px; color: rgba(255,255,255,0.65); line-height: 1.5; }
+
+  /* mots mêlés specific */
+  .bc-mots-timer-row { display: flex; align-items: center; justify-content: space-between; margin-top: 12px; }
+  .bc-mots-timer {
+    font-family: 'Fraunces', serif; font-weight: 800; font-size: 20px; color: var(--navy);
+    background: #fff; border: 1px solid #e6e3d8; border-radius: 10px; padding: 4px 12px;
+  }
+  .bc-mots-timer.low { color: var(--red); border-color: var(--red); }
+  .bc-mots-found { font-size: 12px; font-weight: 700; color: #7c7c8e; }
+  .bc-mots-grid {
+    display: grid; gap: 2px; margin-top: 12px; background: #e6e3d8; border-radius: 10px; padding: 4px;
+    user-select: none;
+  }
+  .bc-mots-cell {
+    background: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: clamp(9px, 3vw, 13px); color: var(--ink);
+    aspect-ratio: 1/1; border-radius: 3px; cursor: pointer;
+  }
+  .bc-mots-cell.selecting { background: var(--gold-light); }
+  .bc-mots-cell.found { background: var(--green); color: #fff; }
+  .bc-mots-cell.miss { background: var(--red); color: #fff; }
+  .bc-mots-wordlist { display: flex; flex-wrap: wrap; gap: 7px; margin-top: 14px; }
+  .bc-mots-word {
+    font-size: 11.5px; font-weight: 700; color: var(--navy); background: #fff; border: 1px solid #e6e3d8;
+    border-radius: 999px; padding: 5px 11px;
+  }
+  .bc-mots-word.found { background: var(--green); color: #fff; border-color: var(--green); text-decoration: line-through; }
+
+  /* devinette specific */
+  .bc-clue-list { margin-top: 14px; }
+  .bc-clue {
+    background: #fff; border: 1px solid #e8e6dc; border-radius: 12px; padding: 12px 14px; margin-bottom: 8px;
+    font-size: 13.5px; color: var(--ink); display: flex; gap: 10px;
+  }
+  .bc-clue b { color: var(--steel); flex-shrink: 0; }
+  .bc-reveal-btn {
+    width: 100%; margin-top: 6px; background: #fff; border: 2px dashed #b9c0d6; color: var(--navy);
+    border-radius: 12px; padding: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer;
+  }
+  .bc-answer-reveal {
+    margin-top: 12px; background: #fbf3da; border: 1px solid #ecd9a0; border-radius: 13px; padding: 14px;
+  }
+  .bc-answer-reveal b { font-family: 'Fraunces', serif; font-size: 16px; color: var(--navy-deep); display: block; }
+  .bc-answer-reveal p { margin: 6px 0 0; font-size: 12.5px; color: #6a5f52; }
+  .bc-self-score-row { display: flex; gap: 10px; margin-top: 12px; }
+  .bc-self-score-row button {
+    flex: 1; border: none; border-radius: 12px; padding: 12px; font-weight: 800; font-size: 13px; cursor: pointer;
+  }
+  .bc-self-yes { background: var(--green); color: #fff; }
+  .bc-self-no { background: #e6e3d8; color: var(--ink); }
+
+  /* ============ RESULTS ============ */
+  #bc-results-body {
+    background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%);
+    color: #fff; padding: 34px 24px 26px; align-items: center; text-align: center;
+    flex: 1; display: flex; flex-direction: column; justify-content: space-between;
+  }
+  .bc-res-eyebrow { font-weight: 800; font-size: 12px; color: var(--gold); letter-spacing: 0.02em; }
+  .bc-res-score { font-family: 'Fraunces', serif; font-weight: 900; font-size: 54px; margin: 8px 0 0; line-height: 1; }
+  .bc-res-level { margin-top: 10px; display: inline-block; background: rgba(212,175,55,0.14); border: 1px solid rgba(212,175,55,0.4); color: var(--gold); padding: 6px 15px; border-radius: 999px; font-weight: 800; font-size: 13px; }
+  .bc-badge-unlock { margin-top: 16px; background: rgba(255,255,255,0.08); border-radius: 14px; padding: 12px; font-size: 12.5px; }
+  .bc-res-grid { margin-top: 20px; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 9px; width: 100%; }
+  .bc-res-cell { background: rgba(255,255,255,0.07); border-radius: 13px; padding: 12px 4px; }
+  .bc-res-cell b { display: block; font-family: 'Fraunces', serif; font-size: 17px; }
+  .bc-res-cell span { font-size: 9.5px; color: rgba(255,255,255,0.65); }
+
+  .bc-pseudo-box { margin-top: 18px; width: 100%; text-align: left; }
+  .bc-pseudo-box label { font-size: 11px; color: rgba(255,255,255,0.65); font-weight: 700; }
+  .bc-pseudo-box input {
+    margin-top: 6px; width: 100%; background: rgba(255,255,255,0.09); border: 1px solid rgba(212,175,55,0.35);
+    border-radius: 10px; padding: 11px 12px; color: #fff; font-size: 14px; font-weight: 700;
+  }
+  .bc-pseudo-box input::placeholder { color: rgba(255,255,255,0.4); }
+
+  .bc-res-actions { width: 100%; margin-top: 14px; display: flex; flex-direction: column; gap: 9px; }
+  .bc-publish-btn { background: var(--gold); color: var(--navy-deep); border: none; border-radius: 999px; padding: 13px; font-weight: 800; font-size: 14px; cursor: pointer; }
+  .bc-publish-btn:disabled { opacity: 0.5; }
+  .bc-share-btn { background: #25D366; color: #fff; border: none; border-radius: 999px; padding: 14px; font-weight: 800; font-size: 14.5px; cursor: pointer; }
+  .bc-replay-btn { background: transparent; border: 1px solid rgba(212,175,55,0.5); color: var(--gold); border-radius: 999px; padding: 12px; font-weight: 800; font-size: 13.5px; cursor: pointer; }
+  .bc-home-btn { background: transparent; color: rgba(255,255,255,0.7); border: 1px solid rgba(255,255,255,0.25); border-radius: 999px; padding: 12px; font-weight: 700; font-size: 13px; cursor: pointer; }
+
+  /* ============ BADGES SCREEN ============ */
+  #bc-badges-body { padding: 18px; flex: 1; overflow-y: auto; }
+  .bc-badge-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 6px; }
+  .bc-badge-card { background: #fff; border: 1px solid #e8e6dc; border-radius: 15px; padding: 16px 12px; text-align: center; }
+  .bc-badge-card.locked { opacity: 0.4; }
+  .bc-badge-emoji { font-size: 30px; }
+  .bc-badge-name { font-family: 'Fraunces', serif; font-weight: 700; font-size: 12.5px; margin-top: 6px; color: var(--ink); }
+  .bc-badge-desc { font-size: 10px; color: #7c7c8e; margin-top: 3px; }
+
+  /* ============ LEADERBOARD SCREEN ============ */
+  #bc-leaderboard-body { padding: 18px; flex: 1; overflow-y: auto; }
+  .bc-lb-note { font-size: 11.5px; color: #7c7c8e; margin-bottom: 14px; line-height: 1.4; }
+  .bc-lb-row {
+    display: flex; align-items: center; gap: 12px; background: #fff; border: 1px solid #e8e6dc;
+    border-radius: 13px; padding: 11px 14px; margin-bottom: 8px;
+  }
+  .bc-lb-rank { font-family: 'Fraunces', serif; font-weight: 800; font-size: 15px; color: var(--navy); width: 26px; }
+  .bc-lb-rank.gold { color: #c9932a; } .bc-lb-rank.silver { color: #8a8a99; } .bc-lb-rank.bronze { color: #a97142; }
+  .bc-lb-name { flex: 1; font-weight: 700; font-size: 13.5px; color: var(--ink); }
+  .bc-lb-meta { font-size: 10px; color: #9a9aa8; }
+  .bc-lb-pts { font-family: 'Fraunces', serif; font-weight: 800; font-size: 14px; color: var(--navy); }
+  .bc-lb-empty { text-align: center; color: #9a9aa8; font-size: 13px; margin-top: 30px; }
+</style>
+</head>
+<body>
+
+<div class="bc-root" id="app">
+
+  <!-- ============ HOME ============ -->
+  <div class="bc-screen active" id="scr-home">
+    <div class="bc-topbar">
+      <div class="bc-eyebrow">UNE ÉDITION TRUTHPATH ÉDITIONS</div>
+      <h1 class="bc-h1">BIBLE <em>Challenge</em></h1>
+      <div class="bc-profile-strip">
+        <div class="bc-profile-pill"><b id="stat-completed">0</b><span>DÉFIS JOUÉS</span></div>
+        <div class="bc-profile-pill"><b id="stat-best">0%</b><span>MEILLEUR SCORE</span></div>
+        <div class="bc-profile-pill clickable" id="go-badges"><b id="stat-badges">0/9</b><span>BADGES 🏅</span></div>
+      </div>
+      <button class="bc-leaderboard-cta" id="go-leaderboard">🏆 Voir le classement</button>
+      <div class="bc-quick-row">
+        <button class="bc-quick-btn" id="go-profil">👤 Mon profil</button>
+        <button class="bc-quick-btn" id="go-boutique">🛍️ Boutique</button>
+        <button class="bc-quick-btn" id="go-toc">📚 Sommaire</button>
+      </div>
+    </div>
+    <div id="bc-home-body">
+      <div class="bc-section-label">Choisis ta catégorie</div>
+      <div class="bc-cat-grid" id="cat-grid"></div>
+      <div class="bc-boutique-teaser" id="home-boutique-teaser">
+        <div>
+          <div class="bc-boutique-teaser-title">📖 Le Grand Livre de Jeux Bibliques</div>
+          <div class="bc-boutique-teaser-desc">Plus de 90 jeux en version papier/PDF — la source de ce jeu.</div>
+        </div>
+        <span class="bc-boutique-teaser-arrow">→</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ PROFIL ============ -->
+  <div class="bc-screen" id="scr-profil">
+    <div class="bc-topbar">
+      <div class="bc-back-row">
+        <button class="bc-back-btn" data-nav="scr-home">←</button>
+        <div><div class="bc-eyebrow">TON ESPACE</div><h1 class="bc-h1" style="font-size:22px">👤 Mon profil</h1></div>
+      </div>
+    </div>
+    <div id="bc-profil-body">
+      <div class="bc-section-label">Ton pseudo</div>
+      <input id="profil-pseudo-input" type="text" maxlength="20" placeholder="Ex : Ricardo" class="bc-profil-input">
+
+      <div class="bc-section-label" style="margin-top:20px">Tes statistiques</div>
+      <div class="bc-profil-stats-grid">
+        <div class="bc-profil-stat"><b id="profil-completed">0</b><span>Défis joués</span></div>
+        <div class="bc-profil-stat"><b id="profil-avg">0%</b><span>Score moyen</span></div>
+        <div class="bc-profil-stat"><b id="profil-perfect">0</b><span>Scores parfaits</span></div>
+        <div class="bc-profil-stat"><b id="profil-streak">0</b><span>Meilleure série</span></div>
+      </div>
+
+      <div class="bc-section-label" style="margin-top:20px">Catégories essayées</div>
+      <div id="profil-categories"></div>
+
+      <button class="bc-badges-link" id="profil-go-badges">🏅 Voir tous mes badges →</button>
+      <button class="bc-reset-btn" id="profil-reset-btn">Réinitialiser ma progression</button>
+    </div>
+  </div>
+
+  <!-- ============ BOUTIQUE ============ -->
+  <div class="bc-screen" id="scr-boutique">
+    <div class="bc-topbar">
+      <div class="bc-back-row">
+        <button class="bc-back-btn" data-nav="scr-home">←</button>
+        <div><div class="bc-eyebrow">TRUTHPATH ÉDITIONS</div><h1 class="bc-h1" style="font-size:22px">🛍️ Boutique</h1></div>
+      </div>
+    </div>
+    <div id="bc-boutique-body">
+      <div class="bc-product-card">
+        <div class="bc-product-emoji">📖</div>
+        <div class="bc-product-title">Le Grand Livre de Jeux Bibliques</div>
+        <div class="bc-product-desc">Plus de 90 jeux bibliques prêts à l'emploi — quiz, vrai/faux, mots mêlés, devinettes, charades — pour enfants, jeunes, groupes et familles. La source de tout le contenu de Bible Challenge.</div>
+        <a class="bc-product-btn" id="boutique-book-link" href="#" target="_blank" rel="noopener">Voir sur la boutique Chariow →</a>
+      </div>
+      <div class="bc-product-card soon">
+        <div class="bc-product-emoji">💎</div>
+        <div class="bc-product-title">Bible Challenge Premium</div>
+        <div class="bc-product-desc">Plus de catégories, plus de niveaux, packs de questions supplémentaires. Bientôt disponible.</div>
+        <div class="bc-product-soon-tag">Bientôt disponible</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ CATEGORY / MODE PICKER ============ -->
+  <div class="bc-screen" id="scr-category">
+    <div class="bc-topbar">
+      <div class="bc-back-row">
+        <button class="bc-back-btn" data-nav="scr-home">←</button>
+        <div>
+          <div class="bc-eyebrow" id="cat-age-label">CATÉGORIE</div>
+          <h1 class="bc-h1" id="cat-name" style="font-size:22px">—</h1>
+        </div>
+      </div>
+    </div>
+    <div id="bc-cat-body">
+      <div class="bc-section-label">Choisis un type de jeu</div>
+      <div id="mode-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ INSTRUCTIONS (book methodology, shown before each game) ============ -->
+  <div class="bc-screen" id="scr-instructions">
+    <div id="bc-instr-body">
+      <div class="bc-instr-emoji" id="instr-emoji">📖</div>
+      <div class="bc-instr-tag" id="instr-tag">Partie A</div>
+      <div class="bc-instr-title" id="instr-title">Titre du jeu</div>
+      <div class="bc-instr-card">
+        <div class="bc-instr-label">📋 Comment jouer</div>
+        <div class="bc-instr-text" id="instr-text">Instructions…</div>
+      </div>
+      <button class="bc-instr-start-btn" id="instr-start-btn">Commencer →</button>
+      <button class="bc-back-btn bc-instr-back" data-nav="scr-category">← Retour aux jeux</button>
+    </div>
+  </div>
+
+  <!-- ============ TABLE DES MATIÈRES ============ -->
+  <div class="bc-screen" id="scr-toc">
+    <div class="bc-topbar">
+      <div class="bc-back-row">
+        <button class="bc-back-btn" data-nav="scr-home">←</button>
+        <div><div class="bc-eyebrow">LE GRAND LIVRE DE JEUX BIBLIQUES</div><h1 class="bc-h1" style="font-size:22px">📚 Table des matières</h1></div>
+      </div>
+    </div>
+    <div id="bc-toc-body">
+      <div class="bc-toc-intro">Plus de 90 jeux bibliques, organisés en 4 sections — voici la structure complète du livre.</div>
+      <div id="toc-list"></div>
+    </div>
+  </div>
+
+  <!-- ============ GAME ============ -->
+  <div class="bc-screen" id="scr-game">
+    <div class="bc-game-top">
+      <div class="bc-top-row">
+        <div class="bc-progress-track"><div class="bc-progress-fill" id="progress-fill"></div></div>
+        <div class="bc-qcount" id="qcount">1/5</div>
+      </div>
+      <div class="bc-streak-row"><div class="bc-streak-pill" id="streak-pill">🔥 <span id="streak-val">0</span> d'affilée</div></div>
+    </div>
+    <div class="bc-game-body" id="game-body"></div>
+  </div>
+
+  <!-- ============ RESULTS ============ -->
+  <div class="bc-screen" id="scr-results">
+    <div id="bc-results-body">
+      <div>
+        <div class="bc-res-eyebrow">DÉFI TERMINÉ !</div>
+        <div class="bc-res-score" id="res-score">0<span style="font-size:20px;opacity:.6">%</span></div>
+        <div class="bc-res-level" id="res-level">🌱 Débutant</div>
+        <div class="bc-badge-unlock" id="badge-unlock" style="display:none"></div>
+      </div>
+      <div class="bc-res-grid">
+        <div class="bc-res-cell"><b id="res-correct">0</b><span>BONNES<br>RÉP.</span></div>
+        <div class="bc-res-cell"><b id="res-wrong">0</b><span>À REVOIR</span></div>
+        <div class="bc-res-cell"><b id="res-points">0</b><span>POINTS</span></div>
+      </div>
+      <div class="bc-pseudo-box">
+        <label for="pseudo-input">TON PSEUDO POUR LE CLASSEMENT (public, visible des autres joueurs)</label>
+        <input id="pseudo-input" type="text" maxlength="20" placeholder="Ex : Ricardo">
+      </div>
+      <div class="bc-res-actions">
+        <button class="bc-publish-btn" id="publish-btn">🏆 Publier mon score au classement</button>
+        <button class="bc-share-btn" id="share-btn">📲 Défier un ami sur WhatsApp</button>
+        <button class="bc-replay-btn" id="replay-btn">Rejouer ce défi</button>
+        <button class="bc-home-btn" data-nav="scr-home">Choisir un autre défi</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============ BADGES ============ -->
+  <div class="bc-screen" id="scr-badges">
+    <div class="bc-topbar">
+      <div class="bc-back-row">
+        <button class="bc-back-btn" data-nav="scr-home">←</button>
+        <div><div class="bc-eyebrow">TA PROGRESSION</div><h1 class="bc-h1" style="font-size:22px">Mes badges</h1></div>
+      </div>
+    </div>
+    <div id="bc-badges-body">
+      <div class="bc-badge-grid" id="badge-grid"></div>
+    </div>
+  </div>
+
+  <!-- ============ LEADERBOARD ============ -->
+  <div class="bc-screen" id="scr-leaderboard">
+    <div class="bc-topbar">
+      <div class="bc-back-row">
+        <button class="bc-back-btn" data-nav="scr-home">←</button>
+        <div><div class="bc-eyebrow">TOP JOUEURS</div><h1 class="bc-h1" style="font-size:22px">🏆 Classement</h1></div>
+      </div>
+    </div>
+    <div id="bc-leaderboard-body">
+      <div class="bc-lb-note" id="lb-note-text">Classement partagé entre tous les joueurs qui testent ce lien. Les pseudos publiés sont visibles de tous.</div>
+      <div id="lb-list"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+(function(){
+
+/* ================= DATA ================= */
+const CATEGORIES = [
+  { id: 'enfants', name: 'Enfants', ageLabel: '6–12 ans', icon: '🧒', color: '#c9932a', diff: 'Facile' },
+  { id: 'jeunes', name: 'Jeunes', ageLabel: '13–25 ans', icon: '🔥', color: '#a97142', diff: 'Moyen' },
+  { id: 'groupes', name: 'Groupes & Familles', ageLabel: 'Tous âges', icon: '👨‍👩‍👧', color: '#3a5a8c', diff: 'Moyen' },
+  { id: 'expert', name: 'Bible Expert', ageLabel: 'Leaders & mordus', icon: '🏆', color: '#16224f', diff: 'Expert' },
+];
+
+const MODE_META = {
+  qcm: { emoji: '📖', title: 'Quiz', desc: '4 choix, 1 bonne réponse' },
+  vf: { emoji: '✅', title: 'Vrai ou Faux', desc: 'Affirmations à valider' },
+  devinette: { emoji: '🔎', title: 'Devinette', desc: 'Indices progressifs' },
+  charade: { emoji: '🔤', title: 'Charade', desc: 'Devine le mot syllabe par syllabe' },
+  motsmeles: { emoji: '🧩', title: 'Mots mêlés', desc: 'Trouve les mots cachés dans la grille' },
+  memoire: { emoji: '🧠', title: 'Mémoire Biblique', desc: 'Complète le verset de mémoire' },
+  quisuisje: { emoji: '🕵️', title: 'Qui suis-je ?', desc: 'Identifie le personnage décrit' },
+  versets: { emoji: '📜', title: 'Versets à Compléter', desc: 'Double défi : compléter + expliquer' },
+  reflexion: { emoji: '💬', title: 'Dîner Biblique', desc: 'Questions à partager en famille, sans score' },
+};
+
+/* ================= BOOK STRUCTURE (Le Grand Livre de Jeux Bibliques) =================
+   Mirrors the real table of contents. Each mode is tagged as either a genuine
+   excerpt of the book's own Partie (with its authentic Jeu range + original
+   instructions), or a "bonus" addition assembled for the app beyond the
+   book's original section boundaries — always labelled honestly as such. */
+const BOOK_STRUCTURE = {
+  enfants: {
+    section: 2, sectionTitle: 'Jeux pour enfants', ageLabel: '6–12 ans',
+    parties: {
+      qcm: { partie: 'A', name: 'Quiz Bibliques', jeuRange: 'Jeux 1–8', bonus: false,
+        instructions: "Lisez chaque question à voix haute. L'enfant répond librement. Félicitez chaque bonne réponse !" },
+      vf: { partie: 'B', name: 'Vrai ou Faux', jeuRange: 'Jeux 9–16 (extraits)', bonus: false,
+        instructions: "Lisez chaque affirmation à voix haute. Chaque bonne réponse vaut 1 point. Après le jeu, ouvrez la Bible ensemble pour vérifier !" },
+      motsmeles: { partie: 'C', name: 'Mots Mêlés', jeuRange: 'Jeux 19–25', bonus: false,
+        instructions: "Les mots mêlés sont excellents pour mémoriser des noms bibliques. Les mots peuvent être cachés horizontalement, verticalement ou en diagonale." },
+      devinette: { name: 'Devinettes faciles', jeuRange: null, bonus: true,
+        instructions: "Contenu bonus assemblé pour l'app à partir de personnages déjà rencontrés dans les quiz, pour varier le jeu des plus jeunes." },
+    },
+  },
+  jeunes: {
+    section: 3, sectionTitle: 'Jeux pour les jeunes', ageLabel: '13–25 ans',
+    parties: {
+      devinette: { partie: 'A', name: 'Devinettes Bibliques', jeuRange: 'Jeux 26–27 (extraits)', bonus: false,
+        instructions: "Chaque devinette donne 3 indices progressifs. Plus on trouve tôt, plus on gagne de points : 1er indice = 3 pts · 2e indice = 2 pts · 3e indice = 1 pt." },
+      charade: { partie: 'B', name: 'Charades Bibliques', jeuRange: 'Jeux 36–45', bonus: false,
+        instructions: "Une charade décompose un mot en syllabes définies séparément. Lisez les indices un à un avant de proposer une réponse." },
+      quisuisje: { partie: 'C', name: 'Qui suis-je ?', jeuRange: 'Jeux 46–48', bonus: false,
+        instructions: "Chaque personnage est décrit uniquement par ses actions. Retrouvez son nom. Ce jeu développe la connaissance profonde des Écritures." },
+      vf: { name: 'Vrai ou Faux — Révision', jeuRange: 'Jeu 18 (Section 2)', bonus: true,
+        instructions: "Contenu bonus : ces affirmations viennent en réalité de la Partie B de la Section 2 (Enfants), réutilisées ici pour varier les révisions des jeunes." },
+    },
+  },
+  groupes: {
+    section: 4, sectionTitle: 'Jeux pour groupes et familles', ageLabel: 'Tous âges',
+    parties: {
+      qcm: { partie: 'A + B', name: 'Tournois & Bombe Biblique', jeuRange: 'Jeux 51, 54, 59', bonus: false,
+        instructions: "Formez des équipes. Chaque bonne réponse rapporte des points à l'équipe. Idéal avec un tableau de score visible de tous." },
+      devinette: { partie: 'B/C mixte', name: 'Devine le Personnage', jeuRange: 'Jeux 47, 48, 52, 60', bonus: false,
+        instructions: "Un personnage est décrit par indices, assemblés depuis plusieurs parties du livre (Sections 3 et 4). L'équipe qui trouve en premier remporte le point." },
+      reflexion: { partie: 'C', name: 'Le Dîner Biblique', jeuRange: 'Jeu 64', bonus: false,
+        instructions: "Lors d'un repas, chaque membre tire une carte-question. À tour de rôle, chacun répond librement. Pas de pression ! Si on ne sait pas, on cherche ensemble dans la Bible." },
+    },
+  },
+  expert: {
+    section: 5, sectionTitle: 'Jeux Avancés — Niveau Expert', ageLabel: 'Leaders & mordus',
+    parties: {
+      memoire: { partie: 'A', name: 'Mémoire Biblique Intensive', jeuRange: 'Jeux 73–74', bonus: false,
+        instructions: "Lisez le verset 3 fois à voix haute en le regardant. Couvrez-le et récitez de mémoire. La répétition espacée est la clé : 1 jour · 1 semaine · 1 mois." },
+      versets: { partie: 'B', name: 'Versets à Compléter', jeuRange: 'Jeux 79–85', bonus: false,
+        instructions: "Double défi : compléter le verset correctement (2 pts), puis expliquer en une phrase son sens théologique (3 pts bonus). Total possible : 5 pts par verset." },
+      qcm: { name: 'Quiz Théologique — Original', jeuRange: null, bonus: true,
+        instructions: "Contenu bonus : questions originales écrites dans l'esprit de la Partie C de cette section (Quiz de Théologie et Doctrine, Jeux 86–90), qui contient dans le livre des questions ouvertes de réflexion." },
+      devinette: { name: 'Figures et Notions Avancées', jeuRange: null, bonus: true,
+        instructions: "Contenu bonus : ces devinettes viennent en réalité de la Section 3 (Jeunes — Devinettes et Qui suis-je), réutilisées ici en version avancée pour les mordus." },
+      vf: { name: 'Sagesse Biblique — Révision', jeuRange: null, bonus: true,
+        instructions: "Contenu bonus : ces affirmations viennent en réalité de la Partie B de la Section 2 (Enfants), réutilisées ici en révision avancée." },
+    },
+  },
+};
+
+const BOOK_TOC = [
+  { section: 2, title: 'Jeux pour enfants', ageLabel: '6–12 ans', catId: 'enfants', parties: [
+    { partie: 'A', name: 'Quiz Bibliques', jeuRange: 'Jeux 1–8', modeKey: 'qcm' },
+    { partie: 'B', name: 'Vrai ou Faux', jeuRange: 'Jeux 9–18', modeKey: 'vf' },
+    { partie: 'C', name: 'Mots Mêlés', jeuRange: 'Jeux 19–25', modeKey: 'motsmeles' },
+  ]},
+  { section: 3, title: 'Jeux pour les jeunes', ageLabel: '13–25 ans', catId: 'jeunes', parties: [
+    { partie: 'A', name: 'Devinettes Bibliques', jeuRange: 'Jeux 26–35', modeKey: 'devinette' },
+    { partie: 'B', name: 'Charades Bibliques', jeuRange: 'Jeux 36–45', modeKey: 'charade' },
+    { partie: 'C', name: 'Qui suis-je ?', jeuRange: 'Jeux 46–50', modeKey: 'quisuisje' },
+  ]},
+  { section: 4, title: 'Jeux pour groupes et familles', ageLabel: 'Tous âges', catId: 'groupes', parties: [
+    { partie: 'A', name: 'Tournois de Quiz en Équipes', jeuRange: 'Jeux 51–56', modeKey: 'qcm' },
+    { partie: 'B', name: 'Défis Oraux et Jeux d\'Animation', jeuRange: 'Jeux 57–63', modeKey: 'devinette' },
+    { partie: 'C', name: 'Activités en Famille', jeuRange: 'Jeux 64–70', modeKey: 'reflexion' },
+  ]},
+  { section: 5, title: 'Jeux Avancés — Niveau Expert', ageLabel: 'Leaders & mordus', catId: 'expert', parties: [
+    { partie: 'A', name: 'Mémoire Biblique Intensive', jeuRange: 'Jeux 71–78', modeKey: 'memoire' },
+    { partie: 'B', name: 'Versets à Compléter', jeuRange: 'Jeux 79–85', modeKey: 'versets' },
+    { partie: 'C', name: 'Quiz de Théologie et Doctrine', jeuRange: 'Jeux 86–90', modeKey: 'qcm' },
+  ]},
+];
+
+const QUESTIONS = {
+  enfants: {
+    qcm: [
+      {"topic": "Genèse", "q": "Combien de jours Dieu a-t-il mis pour créer le monde ?", "options": ["5 jours", "6 jours", "7 jours", "10 jours"], "correct": 1, "ref": "Genèse 1:31", "explain": "Dieu créa le monde en 6 jours et se reposa le 7e."},
+      {"topic": "Genèse", "q": "Que créa Dieu le premier jour ?", "options": ["La lumière", "Les animaux", "L'homme", "Les étoiles"], "correct": 0, "ref": "Genèse 1:3", "explain": "« Que la lumière soit ! »"},
+      {"topic": "Genèse", "q": "Comment s'appelaient le premier homme et la première femme ?", "options": ["Adam et Ève", "Caïn et Abel", "Abraham et Sara", "Noé et sa femme"], "correct": 0, "ref": "Genèse 2:19-22", "explain": "Adam et Ève, créés par Dieu."},
+      {"topic": "Genèse", "q": "Quel jour Dieu se reposa-t-il ?", "options": ["Le 5e jour", "Le 6e jour", "Le 7e jour", "Le 8e jour"], "correct": 2, "ref": "Genèse 2:2", "explain": "Le 7e jour, jour du repos."},
+      {"topic": "Genèse", "q": "Dans quel jardin Dieu plaça-t-il Adam et Ève ?", "options": ["Le jardin de Babylone", "Le jardin d'Éden", "Le jardin de Gethsémané", "Le jardin des Oliviers"], "correct": 1, "ref": "Genèse 2:15", "explain": "Le jardin d'Éden."},
+      {"topic": "Genèse", "q": "Quel animal parla à Ève dans le jardin ?", "options": ["Le serpent", "Le lion", "L'âne", "L'aigle"], "correct": 0, "ref": "Genèse 3:1", "explain": "Le serpent tenta Ève."},
+      {"topic": "Genèse", "q": "Que créa Dieu le quatrième jour ?", "options": ["Les poissons", "Les oiseaux", "Le soleil, la lune et les étoiles", "Les animaux terrestres"], "correct": 2, "ref": "Genèse 1:16", "explain": "Le soleil, la lune et les étoiles."},
+      {"topic": "Genèse", "q": "Pourquoi Dieu décida-t-il d'envoyer le déluge sur la terre ?", "options": ["La méchanceté des hommes était grande", "Les hommes ne priaient plus", "Il voulait punir Noé", "Les animaux se battaient"], "correct": 0, "ref": "Genèse 6:5", "explain": "La méchanceté des hommes était grande sur la terre."},
+      {"topic": "Genèse", "q": "Combien d'animaux de chaque espèce Noé fit-il entrer dans l'arche ?", "options": ["Un seul de chaque", "Deux de chaque espèce", "7 paires des purs, 1 paire des impurs", "Quatre de chaque"], "correct": 2, "ref": "Genèse 7:2", "explain": "Sept paires des animaux purs, une paire des impurs."},
+      {"topic": "Genèse", "q": "Combien de jours et de nuits la pluie tomba-t-elle ?", "options": ["7 jours", "40 jours et 40 nuits", "100 jours", "3 jours"], "correct": 1, "ref": "Genèse 7:12", "explain": "40 jours et 40 nuits de pluie."},
+      {"topic": "Genèse", "q": "Quel oiseau Noé envoya-t-il pour savoir si les eaux avaient baissé ?", "options": ["Un corbeau", "Une colombe", "Un aigle", "Une hirondelle"], "correct": 1, "ref": "Genèse 8:8", "explain": "La colombe, envoyée après le corbeau."},
+      {"topic": "Genèse", "q": "Quel signe Dieu plaça-t-il dans le ciel après le déluge ?", "options": ["Une étoile", "L'arc-en-ciel", "Un nuage noir", "Le soleil"], "correct": 1, "ref": "Genèse 9:13", "explain": "L'arc-en-ciel, signe de l'alliance."},
+      {"topic": "Genèse", "q": "Combien de personnes étaient dans l'arche avec Noé ?", "options": ["6 personnes", "8 personnes", "10 personnes", "4 personnes"], "correct": 1, "ref": "Genèse 7:13", "explain": "8 personnes : Noé, sa femme, ses 3 fils et leurs femmes."},
+      {"topic": "Exode", "q": "Dans quel type de panier Moïse fut-il caché à sa naissance ?", "options": ["Un panier en bois", "Un panier en papyrus enduit de bitume", "Un panier en osier", "Une barque"], "correct": 1, "ref": "Exode 2:3", "explain": "Un panier en papyrus enduit de bitume."},
+      {"topic": "Exode", "q": "Qui découvrit le bébé Moïse dans le Nil ?", "options": ["La reine d'Égypte", "La fille du Pharaon", "Une esclave", "Sa propre mère"], "correct": 1, "ref": "Exode 2:5", "explain": "La fille du Pharaon le trouva et l'adopta."},
+      {"topic": "Exode", "q": "Quelle fut la 10e et dernière plaie d'Égypte ?", "options": ["Les sauterelles", "Les ténèbres", "La mort des premiers-nés", "La grêle"], "correct": 2, "ref": "Exode 12:29", "explain": "La mort des premiers-nés."},
+      {"topic": "Exode", "q": "Comment Dieu guidait-il les Israélites dans le désert le jour ?", "options": ["Par une étoile", "Par une colonne de nuée", "Par un ange", "Par une colonne de feu"], "correct": 1, "ref": "Exode 13:21", "explain": "Une colonne de nuée le jour, de feu la nuit."},
+      {"topic": "Exode", "q": "Quel miracle Dieu fit-il pour permettre de traverser la mer Rouge ?", "options": ["Il fit apparaître un pont", "Il ouvrit la mer en deux", "Il assécha totalement la mer", "Il envoya des bateaux"], "correct": 1, "ref": "Exode 14:21", "explain": "Dieu ouvrit la mer en deux."},
+      {"topic": "Exode", "q": "Sur quelle montagne Dieu donna-t-il les 10 commandements à Moïse ?", "options": ["Le mont Sinaï", "Le mont Nébo", "Le mont Ararat", "Le mont Thabor"], "correct": 0, "ref": "Exode 19:20", "explain": "Le mont Sinaï."},
+      {"topic": "Exode", "q": "Quelle nourriture Dieu envoya-t-il dans le désert ?", "options": ["Du pain", "La manne", "Des figues", "Des cailles seulement"], "correct": 1, "ref": "Exode 16:15", "explain": "La manne, tombée du ciel."},
+      {"topic": "Exode", "q": "Combien d'années les Israélites errèrent-ils dans le désert ?", "options": ["10 ans", "25 ans", "40 ans", "70 ans"], "correct": 2, "ref": "Nombres 14:33", "explain": "40 années d'errance."},
+      {"topic": "1 Samuel", "q": "Quel était le métier de David avant d'être roi ?", "options": ["Pêcheur", "Berger", "Charpentier", "Soldat"], "correct": 1, "ref": "1 Samuel 17:15", "explain": "David était berger."},
+      {"topic": "1 Samuel", "q": "De quelle ville venait le géant Goliath ?", "options": ["Gath", "Jérusalem", "Hébron", "Jéricho"], "correct": 0, "ref": "1 Samuel 17:4", "explain": "Goliath venait de Gath."},
+      {"topic": "1 Samuel", "q": "Quelle arme David utilisa-t-il pour vaincre Goliath ?", "options": ["Une épée", "Une lance", "Une fronde et une pierre", "Un arc"], "correct": 2, "ref": "1 Samuel 17:49", "explain": "Une fronde et une pierre."},
+      {"topic": "1 Samuel", "q": "Combien de pierres David prit-il dans le ruisseau ?", "options": ["1 pierre", "3 pierres", "5 pierres lisses", "10 pierres"], "correct": 2, "ref": "1 Samuel 17:40", "explain": "5 pierres lisses."},
+      {"topic": "1 Samuel", "q": "Qui était le père de David ?", "options": ["Isaï", "Saül", "Samuel", "Jessé le prêtre"], "correct": 0, "ref": "1 Samuel 17:12", "explain": "Isaï."},
+      {"topic": "1 Samuel", "q": "Quel roi d'Israël regardait le combat contre Goliath ?", "options": ["Le roi Saül", "Le roi Salomon", "Le roi David", "Le roi Achab"], "correct": 0, "ref": "1 Samuel 17:11", "explain": "Le roi Saül."},
+      {"topic": "Jonas", "q": "Vers quelle ville Dieu demanda-t-il à Jonas d'aller prêcher ?", "options": ["Ninive", "Babylone", "Tarsis", "Jérusalem"], "correct": 0, "ref": "Jonas 1:2", "explain": "Ninive."},
+      {"topic": "Jonas", "q": "Combien de jours Jonas fut-il dans le ventre du grand poisson ?", "options": ["1 jour", "3 jours et 3 nuits", "7 jours", "40 jours"], "correct": 1, "ref": "Jonas 1:17", "explain": "3 jours et 3 nuits."},
+      {"topic": "Jonas", "q": "Que fit Jonas dans le ventre du poisson ?", "options": ["Il dormit", "Il pria et se repentit", "Il chercha une sortie", "Il pleura sans rien dire"], "correct": 1, "ref": "Jonas 2:1", "explain": "Il pria et se repentit."},
+      {"topic": "Jonas", "q": "Quand Jonas prêcha à Ninive, que firent les habitants ?", "options": ["Ils se moquèrent de lui", "Ils l'emprisonnèrent", "Ils se repentirent et jeûnèrent", "Ils l'ignorèrent"], "correct": 2, "ref": "Jonas 3:5", "explain": "Ils se repentirent et jeûnèrent."},
+      {"topic": "Jonas", "q": "Pourquoi Jonas fut-il en colère à la fin de l'histoire ?", "options": ["Il avait faim", "Dieu avait pardonné à Ninive et Jonas voulait le jugement", "Il voulait rentrer chez lui", "Le poisson était parti"], "correct": 1, "ref": "Jonas 4:1", "explain": "Dieu avait pardonné à Ninive."},
+      {"topic": "Évangiles", "q": "Dans quelle ville Jésus est-il né ?", "options": ["Nazareth", "Jérusalem", "Bethléhem", "Capernaüm"], "correct": 2, "ref": "Luc 2:4-7", "explain": "Bethléhem."},
+      {"topic": "Évangiles", "q": "Comment s'appelaient les parents adoptifs de Jésus ?", "options": ["Marie et Joseph", "Anne et Joachim", "Élisabeth et Zacharie", "Marthe et Lazare"], "correct": 0, "ref": "Matthieu 1:18", "explain": "Marie et Joseph."},
+      {"topic": "Évangiles", "q": "Qui annonça à Marie qu'elle allait avoir un enfant ?", "options": ["L'ange Gabriel", "L'ange Michel", "Un prophète", "Un berger"], "correct": 0, "ref": "Luc 1:26-27", "explain": "L'ange Gabriel."},
+      {"topic": "Évangiles", "q": "Où Jésus fut-il placé après sa naissance ?", "options": ["Dans un berceau", "Dans une crèche", "Dans une maison", "Dans un temple"], "correct": 1, "ref": "Luc 2:7", "explain": "Dans une crèche."},
+      {"topic": "Évangiles", "q": "Quel fut le premier miracle de Jésus ?", "options": ["Marcher sur l'eau", "Guérir un aveugle", "Changer l'eau en vin à Cana", "Nourrir 5000 personnes"], "correct": 2, "ref": "Jean 2:1-11", "explain": "Changer l'eau en vin à Cana."},
+      {"topic": "Évangiles", "q": "Combien de disciples Jésus choisit-il ?", "options": ["7", "10", "12", "70"], "correct": 2, "ref": "Matthieu 10:1-4", "explain": "12 disciples."},
+      {"topic": "Évangiles", "q": "Comment appelle-t-on la prière que Jésus a enseignée ?", "options": ["Le Notre Père", "Le Psaume 23", "Le Cantique", "La Bénédiction"], "correct": 0, "ref": "Matthieu 6:9-13", "explain": "Le Notre Père."},
+      {"topic": "Évangiles", "q": "Combien de pains et de poissons pour nourrir 5 000 personnes ?", "options": ["2 pains et 5 poissons", "5 pains et 2 poissons", "7 pains et 2 poissons", "5 pains et 5 poissons"], "correct": 1, "ref": "Jean 6:9", "explain": "5 pains et 2 poissons."},
+      {"topic": "Évangiles", "q": "Quel ami mort depuis 4 jours Jésus ressuscita-t-il ?", "options": ["Lazare", "Jaïrus", "Zachée", "Nicodème"], "correct": 0, "ref": "Jean 11:43-44", "explain": "Lazare."},
+      {"topic": "Évangiles", "q": "Quel aveugle Jésus guérit-il à Jéricho ?", "options": ["Bartimée", "Zachée", "Simon", "Thomas"], "correct": 0, "ref": "Marc 10:46", "explain": "Bartimée."},
+      {"topic": "Évangiles", "q": "De qui Jésus ressuscita-t-il la fille, à la demande de son père Jaïrus ?", "options": ["La fille de Jaïrus", "Sa nièce", "Sa sœur", "Sa servante"], "correct": 0, "ref": "Marc 5:41-42", "explain": "La fille de Jaïrus."},
+      {"topic": "Paraboles", "q": "Dans la parabole du fils prodigue, que fit le fils cadet avec son héritage ?", "options": ["Il l'investit", "Il le dépensa en menant une vie dissolue", "Il le donna aux pauvres", "Il le garda précieusement"], "correct": 1, "ref": "Luc 15:13", "explain": "Il le dépensa en menant une vie dissolue."},
+      {"topic": "Paraboles", "q": "Dans la parabole du bon Samaritain, qui aida l'homme blessé ?", "options": ["Un prêtre", "Un lévite", "Un Samaritain, étranger méprisé", "Un soldat romain"], "correct": 2, "ref": "Luc 10:33", "explain": "Un Samaritain, étranger méprisé."},
+      {"topic": "Paraboles", "q": "Dans la parabole des talents, combien le serviteur paresseux reçut-il ?", "options": ["1 talent", "2 talents", "5 talents", "10 talents"], "correct": 0, "ref": "Matthieu 25:15", "explain": "1 talent."},
+      {"topic": "Paraboles", "q": "Dans la parabole de la brebis perdue, combien de brebis le berger avait-il ?", "options": ["10 brebis", "50 brebis", "100 brebis", "1000 brebis"], "correct": 2, "ref": "Luc 15:4", "explain": "100 brebis, il laisse les 99 pour chercher la perdue."},
+    ],
+    vf: [
+      {"q": "Dieu créa le monde en 7 jours.", "correct": false, "ref": "Genèse 2:2", "explain": "Dieu créa en 6 jours et se reposa le 7e."},
+      {"q": "Abraham avait 100 ans quand Isaac est né.", "correct": true, "ref": "Genèse 21:5", "explain": "Abraham avait 100 ans."},
+      {"q": "Joseph avait 10 frères.", "correct": false, "ref": "Genèse 42:13", "explain": "Joseph avait 11 frères."},
+      {"q": "Dieu parla à Moïse depuis un buisson qui brûlait.", "correct": true, "ref": "Exode 3:2-4", "explain": "Le buisson ardent."},
+      {"q": "Samson perdait sa force quand il coupait ses cheveux.", "correct": true, "ref": "Juges 16:17", "explain": "Son vœu de naziréat était lié à ses cheveux."},
+      {"q": "Jonas fut dans le ventre du poisson pendant 7 jours.", "correct": false, "ref": "Jonas 1:17", "explain": "3 jours et 3 nuits."},
+      {"q": "L'arche d'alliance contenait les tables des commandements.", "correct": true, "ref": "Deutéronome 10:2", "explain": "Exact."},
+      {"q": "Ruth était la belle-mère de Naomi.", "correct": false, "ref": "Ruth 1:4", "explain": "Ruth était la belle-fille de Naomi."},
+      {"q": "Job était un homme parfaitement juste devant Dieu.", "correct": true, "ref": "Job 1:1", "explain": "Exact."},
+      {"q": "Les Israélites errèrent 40 ans dans le désert.", "correct": true, "ref": "Nombres 14:33", "explain": "Exact."},
+      {"q": "Jésus est né à Nazareth.", "correct": false, "ref": "Luc 2:4-7", "explain": "Il est né à Bethléhem."},
+      {"q": "Les rois mages étaient au nombre de 3 selon la Bible.", "correct": false, "ref": "Matthieu 2:1", "explain": "La Bible ne précise pas leur nombre."},
+      {"q": "Judas trahit Jésus pour 30 pièces d'argent.", "correct": true, "ref": "Matthieu 26:15", "explain": "Exact."},
+      {"q": "Jésus ressuscita le troisième jour.", "correct": true, "ref": "1 Corinthiens 15:4", "explain": "Exact."},
+      {"q": "Pierre renia Jésus trois fois avant le chant du coq.", "correct": true, "ref": "Luc 22:61", "explain": "Exact."},
+      {"q": "Marie-Madeleine fut la première à voir Jésus ressuscité.", "correct": true, "ref": "Jean 20:14-16", "explain": "Exact."},
+      {"q": "Jésus transforma 2 pains et 5 poissons pour 5 000 personnes.", "correct": false, "ref": "Jean 6:9", "explain": "5 pains et 2 poissons."},
+      {"q": "La dernière cène eut lieu un vendredi.", "correct": false, "ref": "Matthieu 26:20", "explain": "Elle eut lieu le jeudi soir."},
+      {"q": "Jean-Baptiste était le cousin de Jésus.", "correct": true, "ref": "Luc 1:36", "explain": "Exact."},
+      {"q": "Lazare fut ressuscité après 4 jours dans le tombeau.", "correct": true, "ref": "Jean 11:17", "explain": "Exact."},
+      {"q": "Un âne parla à Balaam.", "correct": true, "ref": "Nombres 22:28", "explain": "Exact."},
+      {"q": "Daniel fut jeté dans une fosse aux lions.", "correct": true, "ref": "Daniel 6:16", "explain": "Exact."},
+      {"q": "Élie fut nourri par des corbeaux.", "correct": true, "ref": "1 Rois 17:6", "explain": "Exact."},
+      {"q": "Samson tua un lion avec une épée.", "correct": false, "ref": "Juges 14:6", "explain": "Avec ses mains nues."},
+      {"q": "Jésus entra à Jérusalem sur un cheval.", "correct": false, "ref": "Matthieu 21:7", "explain": "Sur un âne."},
+      {"q": "Pierre attrapa un poisson avec une pièce de monnaie dans la bouche.", "correct": true, "ref": "Matthieu 17:27", "explain": "Exact."},
+      {"q": "Le corbeau envoyé par Noé revint avec une feuille d'olivier.", "correct": false, "ref": "Genèse 8:11", "explain": "C'est la colombe qui revint avec une feuille."},
+      {"q": "Dieu envoya des cailles aux Israélites dans le désert.", "correct": true, "ref": "Exode 16:13", "explain": "Exact."},
+      {"q": "La bête de l'Apocalypse a 7 têtes.", "correct": true, "ref": "Apocalypse 13:1", "explain": "Exact."},
+      {"q": "Balaam montait un chameau quand son âne parla.", "correct": false, "ref": "Nombres 22:21", "explain": "Il montait l'âne."},
+      {"q": "Dieu créa les plantes le 3e jour.", "correct": true, "ref": "Genèse 1:11-12", "explain": "Exact."},
+      {"q": "Le ciel et la terre furent créés en un seul jour.", "correct": false, "ref": "Genèse 1", "explain": "Genèse 1 montre 6 jours de création."},
+      {"q": "Dieu appela l'obscurité nuit et la lumière jour.", "correct": true, "ref": "Genèse 1:5", "explain": "Exact."},
+      {"q": "L'homme fut créé à partir de la poussière de la terre.", "correct": true, "ref": "Genèse 2:7", "explain": "Exact."},
+      {"q": "Ève fut créée à partir de la côte d'Adam.", "correct": true, "ref": "Genèse 2:22", "explain": "Exact."},
+      {"q": "Dieu vit que tout ce qu'il avait fait était très mauvais.", "correct": false, "ref": "Genèse 1:31", "explain": "Il vit que c'était très bon."},
+      {"q": "Le soleil fut créé le 4e jour.", "correct": true, "ref": "Genèse 1:16", "explain": "Exact."},
+      {"q": "Les oiseaux furent créés le même jour que les poissons.", "correct": true, "ref": "Genèse 1:20-21", "explain": "Tous deux créés le 5e jour."},
+      {"q": "Adam nomma tous les animaux.", "correct": true, "ref": "Genèse 2:20", "explain": "Exact."},
+      {"q": "Dieu sanctifia le 7e jour.", "correct": true, "ref": "Genèse 2:3", "explain": "Exact."},
+      {"q": "Pierre et Paul se disputèrent à Antioche.", "correct": true, "ref": "Galates 2:11", "explain": "Exact."},
+      {"q": "Paul s'appelait Saul avant sa conversion.", "correct": true, "ref": "Actes 9:1", "explain": "Exact."},
+      {"q": "Jean-Baptiste fut décapité.", "correct": true, "ref": "Marc 6:27", "explain": "Exact."},
+      {"q": "L'Esprit Saint descendit à la Pentecôte sous forme de feu.", "correct": true, "ref": "Actes 2:3", "explain": "Exact."},
+      {"q": "Étienne fut le premier martyr chrétien.", "correct": true, "ref": "Actes 7:59-60", "explain": "Exact."},
+      {"q": "Barnabas était lévite originaire de Chypre.", "correct": true, "ref": "Actes 4:36", "explain": "Exact."},
+      {"q": "Déborah était une prophétesse et juge d'Israël.", "correct": true, "ref": "Juges 4:4", "explain": "Exact."},
+      {"q": "Esther était la reine de Babylone.", "correct": false, "ref": "Esther 1:9", "explain": "Esther était reine de Perse."},
+      {"q": "Sara fut mère à l'âge de 90 ans.", "correct": true, "ref": "Genèse 17:17", "explain": "Exact."},
+      {"q": "Rahab protégea les espions d'Israël à Jéricho.", "correct": true, "ref": "Josué 2:1-6", "explain": "Exact."},
+      {"q": "Ruth était une Moabite.", "correct": true, "ref": "Ruth 1:4", "explain": "Exact."},
+      {"q": "Anne, mère de Samuel, ne put jamais avoir d'enfants.", "correct": false, "ref": "1 Samuel 1:20", "explain": "Dieu lui donna Samuel après sa prière."},
+      {"q": "Lydie était marchande de pourpre à Philippes.", "correct": true, "ref": "Actes 16:14", "explain": "Exact."},
+      {"q": "Miryam était la sœur de Moïse.", "correct": true, "ref": "Exode 2:4", "explain": "Exact."},
+      {"q": "Marie-Madeleine était l'une des 12 disciples.", "correct": false, "ref": "Évangiles", "explain": "Elle suivait Jésus mais ne faisait pas partie des Douze."},
+      {"q": "Priscille enseigna avec son mari Aquilas.", "correct": true, "ref": "Actes 18:26", "explain": "Exact."},
+      {"q": "Saül fut le premier roi d'Israël.", "correct": true, "ref": "1 Samuel 10:1", "explain": "Exact."},
+      {"q": "Salomon demanda à Dieu la richesse.", "correct": false, "ref": "1 Rois 3:9", "explain": "Il demanda la sagesse."},
+      {"q": "Élisée fut le disciple du prophète Élie.", "correct": true, "ref": "1 Rois 19:19-21", "explain": "Exact."},
+      {"q": "Josias était un roi méchant qui adorait les idoles.", "correct": false, "ref": "2 Rois 22:2", "explain": "Josias était au contraire un roi juste."},
+      {"q": "Jérémie est appelé le prophète pleureur.", "correct": true, "ref": "Livre des Lamentations", "explain": "Exact."},
+      {"q": "Nébucadnetsar détruisit le premier Temple de Jérusalem.", "correct": true, "ref": "2 Rois 25", "explain": "Exact."},
+      {"q": "Amos était berger avant de devenir prophète.", "correct": true, "ref": "Amos 7:14", "explain": "Exact."},
+      {"q": "Cyrus le Perse permit aux Juifs de rentrer en Israël.", "correct": true, "ref": "Esdras 1:1-3", "explain": "Exact."},
+      {"q": "Joël a annoncé la venue de l'Esprit Saint.", "correct": true, "ref": "Joël 2:28-29", "explain": "Exact."},
+      {"q": "Ézéchiel eut une vision de la vallée des os secs.", "correct": true, "ref": "Ézéchiel 37:1", "explain": "Exact."},
+      {"q": "Jésus avait 30 ans quand il commença son ministère.", "correct": true, "ref": "Luc 3:23", "explain": "Exact."},
+      {"q": "Il y a 66 livres dans la Bible.", "correct": true, "ref": "Canon protestant", "explain": "Exact."},
+      {"q": "Moïse mourut à 120 ans.", "correct": true, "ref": "Deutéronome 34:7", "explain": "Exact."},
+      {"q": "Matthieu est le dernier livre du Nouveau Testament.", "correct": false, "ref": "Canon biblique", "explain": "C'est l'Apocalypse."},
+      {"q": "Les 10 commandements furent donnés sur le mont Sinaï.", "correct": true, "ref": "Exode 20", "explain": "Exact."},
+      {"q": "Mathusalem vécut 969 ans.", "correct": true, "ref": "Genèse 5:27", "explain": "Exact."},
+      {"q": "Jésus jeûna pendant 40 jours dans le désert.", "correct": true, "ref": "Matthieu 4:2", "explain": "Exact."},
+      {"q": "David régna 40 ans sur Israël.", "correct": true, "ref": "2 Samuel 5:4", "explain": "Exact."},
+      {"q": "Il y a 150 Psaumes dans la Bible.", "correct": true, "ref": "Livre des Psaumes", "explain": "Exact."},
+      {"q": "L'apôtre Paul a écrit 13 épîtres.", "correct": true, "ref": "Nouveau Testament", "explain": "Exact."},
+      {"q": "Timothée avait un père grec et une mère juive.", "correct": true, "ref": "Actes 16:1", "explain": "Exact."},
+      {"q": "Les premiers chrétiens vivaient en communauté, partageant tout en commun.", "correct": true, "ref": "Actes 2:41-47", "explain": "Exact."},
+      {"q": "Jean reçut les révélations de l'Apocalypse alors qu'il était exilé sur une île.", "correct": true, "ref": "Apocalypse 1:9", "explain": "Exact."},
+      {"q": "Lydie fut baptisée avec toute sa maison après avoir écouté Paul.", "correct": true, "ref": "Actes 16:14", "explain": "Exact."},
+    ],
+    devinette: [
+      {"topic": "Qui suis-je ?", "clues": ["J'ai construit une grande arche pour sauver ma famille et les animaux du déluge."], "answer": "Noé", "explain": "Genèse 6-9.", "options": ["David", "Noé", "Jacob", "Zachée"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["J'ai vaincu un géant appelé Goliath avec une fronde et une pierre."], "answer": "David", "explain": "1 Samuel 17.", "options": ["Simon de Cyrène", "David", "Matthieu", "Isaac"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["J'ai été avalé par un grand poisson pendant 3 jours."], "answer": "Jonas", "explain": "Jonas 1-2.", "options": ["Jonas", "Saül", "Samson", "Barnabas"], "correct": 0},
+      {"topic": "Qui suis-je ?", "clues": ["J'ai été trouvé bébé dans un panier sur le Nil, puis j'ai guidé mon peuple hors d'Égypte."], "answer": "Moïse", "explain": "Exode 2 et suivants.", "options": ["Jean", "Samson", "Moïse", "Jonas"], "correct": 2},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis né dans une crèche à Bethléhem."], "answer": "Jésus", "explain": "Luc 2.", "options": ["Jean-Baptiste", "Jésus", "Samuel", "David"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["J'ai été jeté dans une fosse aux lions parce que je priais Dieu."], "answer": "Daniel", "explain": "Daniel 6.", "options": ["Ésaïe", "Adam", "Daniel", "Nicodème"], "correct": 2},
+      {"topic": "Qui suis-je ?", "clues": ["J'ai été vendu par mes frères, puis je suis devenu un grand chef en Égypte."], "answer": "Joseph", "explain": "Genèse 37-50.", "options": ["Paul", "Esdras", "Barnabas", "Joseph"], "correct": 3},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis devenue reine et j'ai sauvé mon peuple d'un grand danger."], "answer": "Esther", "explain": "Livre d'Esther.", "options": ["Rachel", "Rébecca", "Ève", "Esther"], "correct": 3},
+    ],
+    motsmeles: [
+      {"topic": "Les 12 apôtres", "words": ["PIERRE","ANDRE","JACQUES","JEAN","PHILIPPE","BARTHELEMY","MATTHIEU","THOMAS","SIMON","THADDEE","JUDAS","NATHANAEL"]},
+      {"topic": "Les lieux de la Bible", "words": ["BETHLEEM","NAZARETH","JERICHO","JERUSALEM","EDEN","NINIVE","SINAI","JOURDAIN","GALILEE","EGYPTE"]},
+      {"topic": "Les fruits de l'Esprit", "words": ["AMOUR","JOIE","PAIX","PATIENCE","BONTE","BIENVEILLANCE","FIDELITE","DOUCEUR","MAITRISE"]},
+      {"topic": "Livres de l'Ancien Testament", "words": ["GENESE","EXODE","LEVITIQUE","NOMBRES","JOSUE","RUTH","SAMUEL","ROIS","PSAUMES","PROVERBES","JOB","CHRONIQUES"]},
+      {"topic": "Livres du Nouveau Testament", "words": ["MATTHIEU","MARC","LUC","JEAN","ACTES","ROMAINS","GALATES","TIMOTHEE","HEBREUX","JACQUES","APOCALYPSE","EPHESIENS","JUDE"]},
+      {"topic": "Personnages de l'Ancien Testament", "words": ["ADAM","ABRAHAM","NOE","JOSEPH","MOISE","JOSUE","SAMUEL","DAVID","SALOMON","ELIE","DANIEL","JONAS","RUTH","ESTHER","DEBORAH","SAMSON","JACOB"]},
+      {"topic": "Personnages du Nouveau Testament", "words": ["JESUS","MARIE","JEAN","PIERRE","PAUL","ETIENNE","BARNABAS","LYDIE","TIMOTHEE","SILAS","LAZARE","THOMAS"]},
+    ],
+  },
+  jeunes: {
+    devinette: [
+      {"topic": "Personnage biblique", "clues": ["Je suis le fils d'une femme stérile qui a prié avec larmes dans le temple.", "Ma mère m'a consacré à l'Éternel avant même ma naissance.", "J'ai entendu la voix de Dieu la nuit et j'ai dit : « Parle, Éternel, car ton serviteur écoute. »"], "answer": "Samuel", "explain": "Samuel, consacré dès l'enfance par sa mère Anne (1 Samuel 1-3).", "options": ["Zachée", "Jérémie", "David", "Samuel"], "correct": 3},
+      {"topic": "Personnage biblique", "clues": ["J'ai été vendu par mes frères pour 20 pièces d'argent.", "J'ai interprété les rêves du Pharaon et j'ai sauvé l'Égypte d'une famine.", "J'ai pardonné à mes frères et j'ai dit : « C'est Dieu qui m'a envoyé ici. »"], "answer": "Joseph", "explain": "Joseph, fils de Jacob (Genèse 37-50).", "options": ["Joseph", "Énoch", "Saül", "Salomon"], "correct": 0},
+      {"topic": "Quel lieu suis-je ?", "clues": ["Je suis une ville entourée de hauts murs que personne ne pensait pouvoir renverser.", "Les Israélites ont marché autour de moi pendant 7 jours.", "Au son des trompettes et des cris, mes murs sont tombés d'eux-mêmes."], "answer": "Jéricho", "explain": "La ville de Jéricho (Josué 6).", "options": ["Jéricho", "Le mont Carmel", "Gethsémané", "Antioche"], "correct": 0},
+      {"topic": "Personnage biblique", "clues": ["Je suis une femme d'un courage extraordinaire qui a risqué sa vie pour son peuple.", "J'ai été choisie reine sans que le roi sache que j'étais juive.", "Mon cousin m'a dit : « Qui sait si ce n'est pas pour un temps comme celui-ci ? »"], "answer": "Esther", "explain": "La reine Esther (Livre d'Esther).", "options": ["Sara", "Élisabeth", "Esther", "Lydie"], "correct": 2},
+      {"topic": "Personnage biblique", "clues": ["J'étais collecteur d'impôts, méprisé de tous.", "J'étais si petit que j'ai dû monter dans un arbre pour voir Jésus passer.", "Jésus m'a appelé par mon nom et a mangé chez moi ce jour-là."], "answer": "Zachée", "explain": "Zachée, le collecteur d'impôts de Jéricho (Luc 19:1-10).", "options": ["Judas Iscariote", "Pierre", "Zachée", "Noé"], "correct": 2},
+      {"topic": "Personnage biblique", "clues": ["J'étais un pharisien, chef des Juifs, venu voir Jésus de nuit.", "Jésus m'a dit : « Il faut que vous naissiez de nouveau. »", "Après la mort de Jésus, j'ai apporté des aromates pour sa sépulture."], "answer": "Nicodème", "explain": "Nicodème (Jean 3 ; Jean 19:39).", "options": ["Énoch", "Paul", "Nicodème", "David"], "correct": 2},
+      {"topic": "Personnage biblique", "clues": ["J'étais un persécuteur des chrétiens, j'approuvai la lapidation d'Étienne.", "Sur la route de Damas, une lumière m'a aveuglé et j'ai entendu une voix.", "Je suis devenu le plus grand missionnaire de l'Église primitive."], "answer": "Paul (Saul de Tarse)", "explain": "L'apôtre Paul, converti sur le chemin de Damas (Actes 9).", "options": ["Paul (Saul de Tarse)", "Isaac", "Ézéchiel", "Thomas"], "correct": 0},
+      {"topic": "Quel événement suis-je ?", "clues": ["Je suis arrivé 50 jours après la résurrection de Jésus.", "Un bruit comme un vent violent et des langues de feu se sont posées sur chacun.", "Ce jour-là, 3 000 personnes se sont converties après le discours de Pierre."], "answer": "La Pentecôte", "explain": "La Pentecôte, naissance de l'Église (Actes 2).", "options": ["La Pâque", "La Création", "Le Déluge", "La Pentecôte"], "correct": 3},
+    ],
+    charade: [
+      {"topic": "Charade 36", "clues": ["Mon premier est la 1ère lettre de l'alphabet.", "Mon second se dit quand on regarde : on ...", "Mon tout est un prophète qui a annoncé la venue du Messie."], "answer": "Ésaïe", "explain": "Ésaïe, le plus grand prophète messianique de l'AT (Ésaïe 53).", "options": ["Ésaïe", "Job", "L'épître aux Romains", "Exode"], "correct": 0},
+      {"topic": "Charade 37", "clues": ["Mon premier est ce qu'on dit à quelqu'un qu'on aime.", "Mon second est le son que fait une cloche.", "Mon tout est ce que Dieu fit le 7e jour de la Création."], "answer": "Il se reposa", "explain": "« Dieu se reposa le 7e jour » (Genèse 2:2).", "options": ["Mathusalem", "Balaam", "Philippe", "Il se reposa"], "correct": 3},
+      {"topic": "Charade 38", "clues": ["Mon premier est ce qu'on utilise pour dessiner des ronds.", "Mon second est un prénom masculin courant.", "Mon tout est le roi le plus sage qui ait jamais vécu."], "answer": "Salomon", "explain": "Fils de David, roi de sagesse (1 Rois 4:30).", "options": ["Caïphe", "Saül", "Salomon", "Judas Iscariote"], "correct": 2},
+      {"topic": "Charade 39", "clues": ["Mon premier est un métal précieux trouvé dans les mines.", "Mon second est le lieu où les élèves vont chaque matin.", "Mon tout est la ville sainte où se trouvait le temple de Salomon."], "answer": "Jérusalem", "explain": "Capitale du royaume d'Israël.", "options": ["Ninive", "Bethléhem", "Jéricho", "Jérusalem"], "correct": 3},
+      {"topic": "Charade 40", "clues": ["Mon premier est la note de musique entre DO et RÉ.", "Mon second ressemble à un prénom courant terminant par « am ».", "Mon tout est le père des croyants, appelé à quitter son pays."], "answer": "Abraham", "explain": "Le père de la foi (Genèse 12:1-4).", "options": ["Joseph", "Barnabas", "David", "Abraham"], "correct": 3},
+      {"topic": "Charade 41", "clues": ["Mon premier est ce que tu fais avec tes pieds pour te déplacer.", "Mon second est le prénom d'un apôtre qui a marché sur l'eau.", "Mon tout est le bateau de bois construit pour sauver du déluge."], "answer": "L'arche", "explain": "Construite par Noé sur ordre de Dieu (Genèse 6:14).", "options": ["Ponce Pilate", "Abraham", "Zachée", "L'arche"], "correct": 3},
+      {"topic": "Charade 42", "clues": ["Mon premier est le son produit par une abeille.", "Mon second ressemble à « nne », un son doux et nasal.", "Mon tout est la nourriture miraculeuse dans le désert."], "answer": "La manne", "explain": "Nourriture tombée du ciel pour Israël (Exode 16:15).", "options": ["Esdras", "Abraham", "Mathusalem", "La manne"], "correct": 3},
+      {"topic": "Charade 43", "clues": ["Mon premier ressemble à ce que fait un voleur.", "Mon second est la note de musique la plus grave.", "Mon tout est l'apôtre qui trahit Jésus pour 30 pièces."], "answer": "Judas", "explain": "Il livra Jésus aux sacrificateurs (Matthieu 26:15).", "options": ["Daniel", "Saül", "Judas", "Joseph"], "correct": 2},
+      {"topic": "Charade 44", "clues": ["Mon premier ressemble à un mouvement circulaire.", "Mon second ressemble au mot « main » au pluriel.", "Mon tout est l'épître de Paul aux chrétiens de la capitale de l'Empire."], "answer": "Romains", "explain": "Chef-d'œuvre théologique de Paul sur la justification par la foi.", "options": ["Romains", "Ecclésiaste", "L'Apocalypse", "Psaumes"], "correct": 0},
+      {"topic": "Charade 45", "clues": ["Mon premier ressemble à ce qu'on ressent face à quelque chose d'effrayant.", "Mon second désigne un jour entre mardi et jeudi.", "Mon tout est la descente de l'Esprit Saint sur les disciples."], "answer": "Pentecôte", "explain": "Naissance de l'Église chrétienne (Actes 2:1-4).", "options": ["Pentecôte", "Daniel", "Nathanaël", "Élie"], "correct": 0},
+    ],
+    vf: [
+      {"q": "La Bible est divisée en Ancien et Nouveau Testament.", "correct": true, "ref": "Structure biblique", "explain": "Exact."},
+      {"q": "Matthieu, Marc, Luc et Jean sont les 4 évangiles.", "correct": true, "ref": "Nouveau Testament", "explain": "Exact."},
+      {"q": "Le livre de l'Apocalypse fut écrit par l'apôtre Pierre.", "correct": false, "ref": "Apocalypse 1:9", "explain": "Il fut écrit par Jean."},
+      {"q": "Abraham est appelé le père des croyants.", "correct": true, "ref": "Romains 4:16", "explain": "Exact."},
+      {"q": "L'Évangile de Marc est le plus court des quatre évangiles.", "correct": true, "ref": "Nouveau Testament", "explain": "Exact."},
+      {"q": "Esther et Ruth sont les deux livres qui ne mentionnent jamais le nom de Dieu.", "correct": true, "ref": "Livres d'Esther et de Ruth", "explain": "Exact."},
+      {"q": "Le Nouveau Testament a 27 livres.", "correct": true, "ref": "Canon protestant", "explain": "Exact."},
+      {"q": "La Pentecôte est célébrée 50 jours après Pâques.", "correct": true, "ref": "Actes 2:1", "explain": "Exact."},
+      {"q": "Jésus est à la fois Fils de Dieu et Fils de l'homme, un titre qu'il s'est lui-même attribué.", "correct": true, "ref": "Évangiles", "explain": "Exact."},
+      {"q": "La dernière parole de la Bible est « Amen ».", "correct": true, "ref": "Apocalypse 22:21", "explain": "Exact."},
+    ],
+    quisuisje: [
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["J'ai été stérile longtemps, puis j'ai ri quand Dieu m'a annoncé que j'aurais un enfant à 90 ans."], "answer": "Sara", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Sara", "Léa", "Naomi", "Esther"], "correct": 0},
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["J'ai dit à ma belle-mère : « Où tu mourras, je mourrai. » Je suis étrangère et ancêtre de Jésus."], "answer": "Ruth", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Rachel", "Léa", "Priscille", "Ruth"], "correct": 3},
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["Je suis la prophétesse et juge qui commandait l'armée d'Israël."], "answer": "Déborah", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Rébecca", "Marthe", "Dalila", "Déborah"], "correct": 3},
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["J'ai caché les espions de Josué à Jéricho et suspendu un cordon rouge à ma fenêtre."], "answer": "Rahab", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Rahab", "Marthe", "Ève", "Ruth"], "correct": 0},
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["J'ai lavé les pieds de Jésus avec mes larmes et les ai essuyés avec mes cheveux."], "answer": "La femme pécheresse", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Marthe", "Marie-Madeleine", "La femme pécheresse", "Marie de Béthanie"], "correct": 2},
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["J'ai été choisie parmi toutes les femmes pour porter le Fils de Dieu."], "answer": "Marie", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Léa", "Marie", "Anne", "Miryam"], "correct": 1},
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["Je suis la sœur de Moïse. J'ai veillé sur lui dans le Nil."], "answer": "Miryam", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Miryam", "Rébecca", "Marie", "Anne"], "correct": 0},
+      {"topic": "Qui suis-je ? — Femmes de la Bible", "clues": ["Je suis la première femme convertie en Europe. Je vendais de la pourpre."], "answer": "Lydie", "explain": "Qui suis-je ? — Femmes de la Bible.", "options": ["Marie", "Lydie", "Rachel", "Léa"], "correct": 1},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Je suis le premier homme à être enterré vivant dans son puits par mes propres frères jaloux."], "answer": "Joseph", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Josué", "Philippe", "Joseph", "Étienne"], "correct": 2},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai construit un autel à Dieu après avoir placé la pierre de Béthel comme oreiller."], "answer": "Jacob", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Nathanaël", "André", "Jean-Baptiste", "Jacob"], "correct": 3},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Ma force résidait dans mes cheveux. J'ai tué 1 000 hommes avec une mâchoire d'âne."], "answer": "Samson", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Abraham", "Paul", "Timothée", "Samson"], "correct": 3},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Je suis le prophète enlevé au ciel dans un char de feu sans passer par la mort."], "answer": "Élie", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Élie", "Jacques", "Moïse", "Adam"], "correct": 0},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai reconstruit les murs de Jérusalem en 52 jours malgré l'opposition de nos ennemis."], "answer": "Néhémie", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Barnabas", "Néhémie", "Pierre", "Timothée"], "correct": 1},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Je suis le seul personnage de la Bible à avoir été simplement « pris » par Dieu sans mourir."], "answer": "Énoch", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Énoch", "Thomas", "Salomon", "Joseph"], "correct": 0},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai combattu 450 prophètes de Baal sur le mont Carmel et Dieu m'a répondu par le feu."], "answer": "Élie", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Timothée", "Aquilas", "Jacques", "Élie"], "correct": 3},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai été le premier roi d'Israël, choisi pour ma grande stature, mais j'ai désobéi à Dieu."], "answer": "Saül", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Paul", "Élisée", "Josué", "Saül"], "correct": 3},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai prié en jeûnant pour obtenir la miséricorde de Dieu sur mon peuple en captivité."], "answer": "Daniel", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Daniel", "Thomas", "Saül", "Judas Iscariote"], "correct": 0},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Devin dont l'ânesse parla pour m'empêcher de maudire Israël."], "answer": "Balaam", "explain": "Qui suis-je ? — Hommes de l'AT.", "options": ["Balaam", "Aquilas", "Étienne", "Timothée"], "correct": 0},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'ai marché sur l'eau mais j'ai commencé à couler dès que j'ai regardé le vent."], "answer": "Pierre", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Matthieu", "Pierre", "Samson", "Ézéchiel"], "correct": 1},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'étais le plus jeune des apôtres. On me surnommait « le disciple que Jésus aimait »."], "answer": "Jean", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Jean", "Judas Iscariote", "Nicodème", "Jacob"], "correct": 0},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'ai trahi Jésus pour 30 pièces d'argent, puis je les ai jetées et je me suis pendu."], "answer": "Judas Iscariote", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Paul", "Josué", "Ézéchiel", "Judas Iscariote"], "correct": 3},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je suis l'apôtre qui a dit : « Je ne croirai pas si je ne vois pas les marques des clous. »"], "answer": "Thomas", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Josué", "Jean-Baptiste", "Thomas", "Jérémie"], "correct": 2},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'étais pêcheur avec Pierre. Jésus m'appela le premier avec mon frère."], "answer": "André", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Barnabas", "Isaac", "Élie", "André"], "correct": 3},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je suis l'apôtre qui a converti l'eunuque éthiopien sur la route de Gaza."], "answer": "Philippe", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Ézéchiel", "Élisée", "Jacques", "Philippe"], "correct": 3},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'étais collecteur d'impôts. Jésus m'a dit « Suis-moi » et j'ai tout quitté. J'ai rédigé un évangile."], "answer": "Matthieu", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Saül", "Jean-Baptiste", "Matthieu", "Moïse"], "correct": 2},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je suis le premier martyr chrétien. J'ai demandé à Dieu de pardonner ceux qui me tuaient."], "answer": "Étienne", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Jean", "Étienne", "Nathanaël", "Thomas"], "correct": 1},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Jésus m'a vu sous le figuier avant même que Philippe m'appelle."], "answer": "Nathanaël", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Jonas", "Nathanaël", "Joseph", "Jean-Baptiste"], "correct": 1},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je vendais de la pourpre à Philippes et fus baptisée avec toute ma maison."], "answer": "Lydie", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Esther", "Rahab", "Naomi", "Lydie"], "correct": 3},
+    ],
+  },
+  groupes: {
+    qcm: [
+      {"topic": "Bible générale", "q": "Quel est le premier mot de la Bible ?", "options": ["Au commencement", "Dieu", "La lumière", "Au début"], "correct": 0, "ref": "Genèse 1:1", "explain": "« Au commencement »."},
+      {"topic": "Bible générale", "q": "Combien de livres compte l'Ancien Testament ?", "options": ["27", "39", "46", "66"], "correct": 1, "ref": "Canon protestant", "explain": "39 livres."},
+      {"topic": "Rois", "q": "Quel roi d'Israël eut 700 femmes et 300 concubines ?", "options": ["David", "Salomon", "Achab", "Roboam"], "correct": 1, "ref": "1 Rois 11:3", "explain": "Salomon."},
+      {"topic": "Genèse", "q": "Quel oiseau Noé envoya-t-il en premier hors de l'arche ?", "options": ["Une colombe", "Un corbeau", "Un aigle", "Un pigeon"], "correct": 1, "ref": "Genèse 8:7", "explain": "Un corbeau, envoyé en premier."},
+      {"topic": "Bible générale", "q": "Combien de Psaumes y a-t-il dans la Bible ?", "options": ["100", "120", "150", "200"], "correct": 2, "ref": "Livre des Psaumes", "explain": "150 Psaumes."},
+      {"topic": "Genèse", "q": "Quel fut le signe de l'alliance entre Dieu et Abraham ?", "options": ["L'arc-en-ciel", "La circoncision", "Le sacrifice", "Le sabbat"], "correct": 1, "ref": "Genèse 17:11", "explain": "La circoncision."},
+      {"topic": "Bible générale", "q": "Quelle tribu d'Israël fut choisie pour le sacerdoce ?", "options": ["Juda", "Lévi", "Benjamin", "Éphraïm"], "correct": 1, "ref": "Nombres 3:12", "explain": "La tribu de Lévi."},
+      {"topic": "Prophètes", "q": "Quel prophète fut enlevé au ciel dans un char de feu ?", "options": ["Élisée", "Élie", "Ésaïe", "Moïse"], "correct": 1, "ref": "2 Rois 2:11", "explain": "Élie."},
+      {"topic": "Bible générale", "q": "Combien de livres compte le Nouveau Testament ?", "options": ["21", "27", "39", "66"], "correct": 1, "ref": "Canon protestant", "explain": "27 livres."},
+      {"topic": "Bible générale", "q": "Quel est le verset le plus court de la Bible ?", "options": ["« Dieu est amour »", "« Jésus pleura »", "« Priez sans cesse »", "« Réjouissez-vous toujours »"], "correct": 1, "ref": "Jean 11:35", "explain": "« Jésus pleura »."},
+      {"topic": "Lieux bibliques", "q": "Où Jésus est-il né ?", "options": ["Nazareth", "Bethléhem", "Jérusalem", "Capernaüm"], "correct": 1, "ref": "Luc 2:4-7", "explain": "Bethléhem."},
+      {"topic": "Lieux bibliques", "q": "Où Moïse reçut-il les 10 commandements ?", "options": ["Le mont Sinaï", "Le mont Nébo", "Le mont Thabor", "Le mont Ararat"], "correct": 0, "ref": "Exode 19:20", "explain": "Le mont Sinaï."},
+      {"topic": "Lieux bibliques", "q": "Où Jésus fut-il crucifié ?", "options": ["Le Golgotha", "Le mont des Oliviers", "Gethsémané", "Le Temple"], "correct": 0, "ref": "Matthieu 27:33", "explain": "Le Golgotha."},
+      {"topic": "Lieux bibliques", "q": "Où l'apôtre Paul fut-il converti ?", "options": ["À Jérusalem", "Sur la route de Damas", "À Antioche", "À Éphèse"], "correct": 1, "ref": "Actes 9:3", "explain": "Sur la route de Damas."},
+      {"topic": "Lieux bibliques", "q": "Où Jésus transforma-t-il l'eau en vin ?", "options": ["À Cana", "À Nazareth", "À Capernaüm", "À Béthanie"], "correct": 0, "ref": "Jean 2:1", "explain": "À Cana."},
+      {"topic": "Lieux bibliques", "q": "Où Daniel fut-il jeté dans la fosse aux lions ?", "options": ["À Babylone", "À Ninive", "À Jérusalem", "En Perse"], "correct": 0, "ref": "Daniel 6", "explain": "À Babylone."},
+      {"topic": "Lieux bibliques", "q": "Où Jean reçut-il les révélations de l'Apocalypse ?", "options": ["Sur l'île de Patmos", "À Éphèse", "À Rome", "En Crète"], "correct": 0, "ref": "Apocalypse 1:9", "explain": "Sur l'île de Patmos."},
+      {"topic": "Lieux bibliques", "q": "Où Adam et Ève furent-ils placés par Dieu ?", "options": ["Dans le jardin d'Éden", "En Égypte", "À Babylone", "Au mont Ararat"], "correct": 0, "ref": "Genèse 2:8", "explain": "Dans le jardin d'Éden."},
+      {"topic": "Lieux bibliques", "q": "Où Jésus pria-t-il la nuit de son arrestation ?", "options": ["À Gethsémané", "Au Golgotha", "Au Temple", "En Galilée"], "correct": 0, "ref": "Matthieu 26:36", "explain": "À Gethsémané."},
+      {"topic": "Lieux bibliques", "q": "Où Élie remporta-t-il sa victoire sur les prophètes de Baal ?", "options": ["Au mont Carmel", "Au mont Sinaï", "Au mont Nébo", "Au mont Thabor"], "correct": 0, "ref": "1 Rois 18:19", "explain": "Au mont Carmel."},
+      {"topic": "La Bombe Biblique", "q": "Quel est le premier commandement donné par Dieu ?", "options": ["Tu n'auras pas d'autres dieux devant ma face", "Aime ton prochain comme toi-même", "Tu ne voleras point", "Honore ton père et ta mère"], "correct": 0, "ref": "Exode 20:3", "explain": "Tu n'auras pas d'autres dieux devant ma face."},
+      {"topic": "La Bombe Biblique", "q": "Dans quel livre se trouve le Psaume 23 ?", "options": ["Les Psaumes", "Le Pentateuque", "L'Ecclésiaste", "Les Évangiles"], "correct": 0, "ref": "Livre des Psaumes", "explain": "Les Psaumes."},
+      {"topic": "La Bombe Biblique", "q": "Qui était le père d'Abraham ?", "options": ["Timothée", "Isaac", "Malchus", "Térach"], "correct": 3, "ref": "Genèse 11:26", "explain": "Térach."},
+      {"topic": "La Bombe Biblique", "q": "Comment s'appellent les 5 premiers livres de la Bible ?", "options": ["L'Ecclésiaste", "Les Évangiles", "Les Psaumes", "Le Pentateuque"], "correct": 3, "ref": "La Torah", "explain": "Le Pentateuque."},
+      {"topic": "La Bombe Biblique", "q": "Quel est le plus long Psaume ?", "options": ["Psaume 23", "Psaume 150", "Psaume 119", "Psaume 100"], "correct": 2, "ref": "176 versets", "explain": "Psaume 119."},
+      {"topic": "La Bombe Biblique", "q": "Comment s'appelait le serviteur dont Pierre coupa l'oreille ?", "options": ["Isaac", "Matthias", "Malchus", "Jean"], "correct": 2, "ref": "Jean 18:10", "explain": "Malchus."},
+      {"topic": "La Bombe Biblique", "q": "Quel est l'autre nom de l'apôtre Thomas ?", "options": ["Boanergès", "Didyme", "Barjona", "Céphas"], "correct": 1, "ref": "Jean 11:16", "explain": "Didyme."},
+      {"topic": "La Bombe Biblique", "q": "Qui guérit Saul de sa cécité après sa rencontre sur le chemin de Damas ?", "options": ["Nathanaël", "Jacob", "Ananias", "Cyrus"], "correct": 2, "ref": "Actes 9:17-18", "explain": "Ananias."},
+      {"topic": "La Bombe Biblique", "q": "Qui remplaça Judas parmi les Douze apôtres ?", "options": ["Matthias", "Noé", "Salomon", "Adam"], "correct": 0, "ref": "Actes 1:26", "explain": "Matthias."},
+      {"topic": "La Bombe Biblique", "q": "Comment Dieu parla-t-il à Élie après le mont Carmel ?", "options": ["Par un ange", "Par une voix douce et suave", "Par un songe", "Par le tonnerre"], "correct": 1, "ref": "1 Rois 19:12", "explain": "Par une voix douce et suave."},
+      {"topic": "La Bombe Biblique", "q": "Comment s'appelait l'ami fidèle de David, fils du roi Saül ?", "options": ["Jonathan", "Nathanaël", "Pierre", "Noé"], "correct": 0, "ref": "1 Samuel 18:1", "explain": "Jonathan."},
+      {"topic": "La Bombe Biblique", "q": "Quelle femme vendit de la pourpre et fut baptisée par Paul ?", "options": ["Marie", "Rébecca", "Ruth", "Lydie"], "correct": 3, "ref": "Actes 16:14", "explain": "Lydie."},
+      {"topic": "La Bombe Biblique", "q": "Quel est le premier miracle de l'Église rapporté dans les Actes ?", "options": ["La résurrection d'un mort", "Un tremblement de terre", "La guérison d'un aveugle", "La guérison d'un boiteux"], "correct": 3, "ref": "Actes 3:6", "explain": "La guérison d'un boiteux."},
+      {"topic": "La Bombe Biblique", "q": "Dans quelle ville Paul et Silas furent-ils emprisonnés puis délivrés par un tremblement de terre ?", "options": ["Jérusalem", "Le mont Carmel", "Philippes", "Le mont Horeb"], "correct": 2, "ref": "Actes 16:25-26", "explain": "Philippes."},
+      {"topic": "La Bombe Biblique", "q": "Combien de femmes au minimum trouvèrent le tombeau vide ?", "options": ["1 seule", "Au moins 3", "5", "2"], "correct": 1, "ref": "Marie-Madeleine, Marie, Salomé", "explain": "Au moins 3."},
+      {"topic": "La Bombe Biblique", "q": "Quelle montagne Élie traversa-t-il pour entendre la voix de Dieu ?", "options": ["Bethléhem", "Le mont Horeb", "Philippes", "Éphèse"], "correct": 1, "ref": "1 Rois 19:8", "explain": "Le mont Horeb."},
+      {"topic": "La Bombe Biblique", "q": "Quel roi perse permit aux Juifs de rentrer en Israël ?", "options": ["Barnabas", "Cyrus", "Timothée", "Philippe"], "correct": 1, "ref": "Esdras 1:1-3", "explain": "Cyrus."},
+      {"topic": "La Bombe Biblique", "q": "Combien de fois Jacob travailla-t-il pour obtenir Rachel en mariage ?", "options": ["7 ans", "14 ans (7+7)", "3 ans", "20 ans"], "correct": 1, "ref": "Genèse 29:27-28", "explain": "14 ans (7+7)."},
+      {"topic": "La Bombe Biblique", "q": "Que signifie le nom « Immanuel » ?", "options": ["Dieu sauve", "Dieu est amour", "Dieu avec nous", "Prince de la paix"], "correct": 2, "ref": "Matthieu 1:23", "explain": "Dieu avec nous."},
+      {"topic": "La Bombe Biblique", "q": "Quel apôtre fut le premier des Douze à être décapité ?", "options": ["Abraham", "Jonas", "Jacques fils de Zébédée", "André"], "correct": 2, "ref": "Actes 12:2", "explain": "Jacques fils de Zébédée."},
+    ],
+    devinette: [
+      {"topic": "Tournoi personnages", "clues": ["Il construisit l'arche et survécut au déluge avec sa famille."], "answer": "Noé", "explain": "Noé (Genèse 6-9).", "options": ["Joseph", "Noé", "Melchisédek", "Jérémie"], "correct": 1},
+      {"topic": "Tournoi personnages", "clues": ["Elle quitta son peuple pour suivre sa belle-mère et devint ancêtre de Jésus."], "answer": "Ruth", "explain": "Ruth la Moabite.", "options": ["Ruth", "Dalila", "Marie", "Marthe"], "correct": 0},
+      {"topic": "Tournoi personnages", "clues": ["Il tua un géant avec une fronde, puis devint roi d'Israël."], "answer": "David", "explain": "David (1 Samuel 17).", "options": ["Joseph", "Isaac", "Balaam", "David"], "correct": 3},
+      {"topic": "Tournoi personnages", "clues": ["Elle devint reine de Perse et sauva son peuple du massacre."], "answer": "Esther", "explain": "Esther.", "options": ["Esther", "Naomi", "Marthe", "Lydie"], "correct": 0},
+      {"topic": "Tournoi personnages", "clues": ["Il fut avalé par un grand poisson après avoir fui la mission de Dieu."], "answer": "Jonas", "explain": "Jonas.", "options": ["Jonas", "Moïse", "Adam", "Matthieu"], "correct": 0},
+      {"topic": "Tournoi personnages", "clues": ["Il fut aveuglé sur la route de Damas et devint grand missionnaire."], "answer": "Paul", "explain": "L'apôtre Paul.", "options": ["Élisée", "David", "Balaam", "Paul"], "correct": 3},
+      {"topic": "Tournoi personnages", "clues": ["Il était si petit qu'il monta dans un arbre pour voir Jésus."], "answer": "Zachée", "explain": "Zachée.", "options": ["Jacques", "Noé", "Barnabas", "Zachée"], "correct": 3},
+      {"topic": "Tournoi personnages", "clues": ["Il interpréta les rêves, fut vendu par ses frères, devint vice-roi d'Égypte."], "answer": "Joseph", "explain": "Joseph.", "options": ["Joseph", "Énoch", "Ésaïe", "David"], "correct": 0},
+      {"topic": "Tournoi personnages", "clues": ["Il construisit le premier Temple et fut le roi le plus sage."], "answer": "Salomon", "explain": "Salomon.", "options": ["Isaac", "Zachée", "Matthieu", "Salomon"], "correct": 3},
+      {"topic": "Tournoi personnages", "clues": ["Elle était la seule femme juge d'Israël."], "answer": "Déborah", "explain": "Déborah (Juges 4).", "options": ["Déborah", "Lydie", "Léa", "Esther"], "correct": 0},
+      {"topic": "Tournoi personnages", "clues": ["Il fut jeté dans la fosse aux lions pour avoir refusé de cesser de prier."], "answer": "Daniel", "explain": "Daniel.", "options": ["Nathanaël", "Adam", "André", "Daniel"], "correct": 3},
+      {"topic": "Tournoi personnages", "clues": ["Il était le précurseur de Jésus, vivait dans le désert et mangeait des sauterelles."], "answer": "Jean-Baptiste", "explain": "Jean-Baptiste.", "options": ["Jean-Baptiste", "Moïse", "Judas Iscariote", "Énoch"], "correct": 0},
+      {"topic": "Tournoi personnages", "clues": ["Il fut ressuscité après 4 jours dans le tombeau."], "answer": "Lazare", "explain": "Lazare.", "options": ["Lazare", "Zachée", "Judas Iscariote", "Salomon"], "correct": 0},
+      {"topic": "Tournoi personnages", "clues": ["Elle fut la première à annoncer la résurrection de Jésus."], "answer": "Marie-Madeleine", "explain": "Marie-Madeleine.", "options": ["Anne", "Marie-Madeleine", "Marthe", "Priscille"], "correct": 1},
+      {"topic": "Tournoi personnages", "clues": ["Il fut le premier martyr chrétien."], "answer": "Étienne", "explain": "Étienne (Actes 7).", "options": ["Esdras", "Étienne", "Nathanaël", "Élisée"], "correct": 1},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Je suis le premier homme à être enterré vivant dans son puits par ses propres frères jaloux."], "answer": "Joseph", "explain": "Genèse 37:24.", "options": ["David", "Joseph", "Isaac", "Salomon"], "correct": 1},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai construit un autel à Dieu après avoir placé la pierre de Béthel comme oreiller."], "answer": "Jacob", "explain": "Genèse 28:18.", "options": ["Adam", "Jacob", "Daniel", "Nathanaël"], "correct": 1},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Ma force résidait dans mes cheveux. J'ai tué 1 000 hommes avec une mâchoire d'âne."], "answer": "Samson", "explain": "Juges 15:15-16.", "options": ["Nathanaël", "Samson", "Énoch", "Jacques"], "correct": 1},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Je suis le prophète enlevé au ciel dans un char de feu sans passer par la mort."], "answer": "Élie", "explain": "2 Rois 2:11.", "options": ["Jérémie", "Élie", "Élisée", "Abraham"], "correct": 1},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai reconstruit les murs de Jérusalem en 52 jours malgré l'opposition de nos ennemis."], "answer": "Néhémie", "explain": "Néhémie 6:15.", "options": ["Néhémie", "Jacob", "Saül", "Joseph"], "correct": 0},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["Je suis le seul personnage de la Bible à avoir été simplement « pris » par Dieu sans mourir."], "answer": "Énoch", "explain": "Genèse 5:24.", "options": ["Saül", "Zachée", "Énoch", "Samson"], "correct": 2},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai combattu 450 prophètes de Baal sur le mont Carmel et Dieu m'a répondu par le feu."], "answer": "Élie", "explain": "1 Rois 18:38.", "options": ["Élisée", "Pierre", "Élie", "Néhémie"], "correct": 2},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai été le premier roi d'Israël, choisi pour ma grande stature, mais j'ai désobéi à Dieu."], "answer": "Saül", "explain": "1 Samuel 10:23 ; 13:13.", "options": ["Matthieu", "Simon de Cyrène", "Saül", "Pierre"], "correct": 2},
+      {"topic": "Qui suis-je ? — Hommes de l'AT", "clues": ["J'ai prié en jeûnant pour obtenir la miséricorde de Dieu sur mon peuple en captivité."], "answer": "Daniel", "explain": "Daniel 9:3-4.", "options": ["Daniel", "Ponce Pilate", "Matthieu", "Néhémie"], "correct": 0},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'ai marché sur l'eau mais j'ai commencé à couler dès que j'ai regardé le vent."], "answer": "Pierre", "explain": "Matthieu 14:30.", "options": ["Paul", "Pierre", "Jonas", "Caïphe"], "correct": 1},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'étais le plus jeune des apôtres. On me surnommait « le disciple que Jésus aimait »."], "answer": "Jean", "explain": "Jean 13:23.", "options": ["Esdras", "Jean", "Barnabas", "Nicodème"], "correct": 1},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'ai trahi Jésus pour 30 pièces d'argent, puis je les ai jetées et je me suis pendu."], "answer": "Judas Iscariote", "explain": "Matthieu 27:5.", "options": ["Josué", "Daniel", "Barnabas", "Judas Iscariote"], "correct": 3},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je suis l'apôtre qui a dit : « Je ne croirai pas si je ne vois pas les marques des clous. »"], "answer": "Thomas", "explain": "Jean 20:25.", "options": ["Thomas", "Jean", "Joseph", "Néhémie"], "correct": 0},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'étais pêcheur avec Pierre. Jésus m'appela le premier avec mon frère."], "answer": "André", "explain": "Jean 1:40.", "options": ["Jean", "Judas Iscariote", "Ézéchiel", "André"], "correct": 3},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je suis l'apôtre qui a converti l'eunuque éthiopien sur la route de Gaza."], "answer": "Philippe", "explain": "Actes 8:26-38.", "options": ["Daniel", "Jacques", "Jacob", "Philippe"], "correct": 3},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["J'étais collecteur d'impôts. Jésus m'a dit « Suis-moi » et j'ai tout quitté. J'ai rédigé un évangile."], "answer": "Matthieu", "explain": "Matthieu 9:9.", "options": ["Zachée", "Jacob", "Matthieu", "Étienne"], "correct": 2},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je suis le premier martyr chrétien. J'ai demandé à Dieu de pardonner ceux qui me tuaient."], "answer": "Étienne", "explain": "Actes 7:59-60.", "options": ["Isaac", "Ézéchiel", "Abraham", "Étienne"], "correct": 3},
+      {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Jésus m'a vu sous le figuier avant même que Philippe m'appelle."], "answer": "Nathanaël", "explain": "Jean 1:48.", "options": ["Nathanaël", "Élie", "Judas Iscariote", "Adam"], "correct": 0},
+      {"topic": "Devine le personnage", "clues": ["Je suis un personnage de l'Ancien Testament. Mon histoire est liée à un grand combat.", "J'ai affronté un homme beaucoup plus grand que moi."], "answer": "David", "explain": "Berger devenu roi d'Israël, vainqueur de Goliath.", "options": ["Jacques fils de Zébédée", "David", "Saül", "Malchus"], "correct": 1},
+      {"topic": "Devine le personnage", "clues": ["Je suis un homme choisi par Dieu pour une grande mission.", "J'ai conduit un peuple vers la liberté."], "answer": "Moïse", "explain": "Serviteur de Dieu choisi pour libérer Israël d'Égypte.", "options": ["Moïse", "Cyrus", "Ruth", "Pierre"], "correct": 0},
+      {"topic": "Devine le personnage", "clues": ["Dieu m'a demandé de construire quelque chose pour sauver ma famille.", "J'ai vécu un événement lié à beaucoup d'eau."], "answer": "Noé", "explain": "Il construisit l'arche avant le déluge.", "options": ["Ève", "Ruth", "Noé", "Naomi"], "correct": 2},
+      {"topic": "Devine le personnage", "clues": ["Je suis une femme dont l'histoire montre le courage et la fidélité.", "Je suis devenue reine dans un pays étranger."], "answer": "Esther", "explain": "Reine qui risqua sa vie pour sauver son peuple.", "options": ["Thomas", "Nathanaël", "Esther", "Jacques fils de Zébédée"], "correct": 2},
+      {"topic": "Devine le personnage", "clues": ["Je suis un disciple proche de Jésus.", "J'ai eu peur, mais Dieu m'a utilisé puissamment après."], "answer": "Pierre", "explain": "Ancien pêcheur, il prêcha à la Pentecôte.", "options": ["Abraham", "Ananias", "Pierre", "Barnabas"], "correct": 2},
+      {"topic": "Devine le personnage", "clues": ["J'étais un persécuteur avant de changer de vie.", "J'ai écrit plusieurs lettres dans le Nouveau Testament."], "answer": "Paul", "explain": "Apôtre ayant écrit plusieurs épîtres.", "options": ["Térach", "Jonathan", "Paul", "Daniel"], "correct": 2},
+      {"topic": "Devine le personnage", "clues": ["Dieu m'a envoyé parler à un peuple, mais j'ai voulu fuir.", "Mon histoire est liée à un grand animal marin."], "answer": "Jonas", "explain": "Prophète envoyé à Ninive.", "options": ["Cyrus", "Thomas", "Jonas", "Ève"], "correct": 2},
+      {"topic": "Devine le personnage", "clues": ["On me connaît pour une grande qualité reçue de Dieu.", "J'ai construit un bâtiment très important à Jérusalem."], "answer": "Salomon", "explain": "Roi connu pour sa sagesse, constructeur du Temple.", "options": ["Isaac", "Jacques fils de Zébédée", "Malchus", "Salomon"], "correct": 3},
+      {"topic": "Devine le personnage", "clues": ["Je suis un personnage de l'Ancien Testament connu pour ma grande fidélité à Dieu malgré les épreuves.", "J'ai été jeté dans une fosse remplie de lions, mais Dieu m'a protégé."], "answer": "Daniel", "explain": "Prophète fidèle, protégé dans la fosse aux lions.", "options": ["Daniel", "Sara", "Jonas", "Josué"], "correct": 0},
+      {"topic": "Devine le personnage", "clues": ["Je suis une femme de la Bible connue pour mon amour, ma fidélité et mon engagement.", "J'ai quitté mon pays pour suivre ma belle-mère et mon Dieu."], "answer": "Ruth", "explain": "Femme connue pour sa fidélité et sa loyauté.", "options": ["Ruth", "Matthieu", "Isaac", "Lydie"], "correct": 0},
+    ],
+    vf: [
+      {"q": "Dieu créa le monde en 7 jours.", "correct": false, "ref": "Genèse 2:2", "explain": "Dieu créa en 6 jours et se reposa le 7e."},
+      {"q": "Abraham avait 100 ans quand Isaac est né.", "correct": true, "ref": "Genèse 21:5", "explain": "Abraham avait 100 ans."},
+      {"q": "Joseph avait 10 frères.", "correct": false, "ref": "Genèse 42:13", "explain": "Joseph avait 11 frères."},
+      {"q": "Dieu parla à Moïse depuis un buisson qui brûlait.", "correct": true, "ref": "Exode 3:2-4", "explain": "Le buisson ardent."},
+      {"q": "Samson perdait sa force quand il coupait ses cheveux.", "correct": true, "ref": "Juges 16:17", "explain": "Son vœu de naziréat était lié à ses cheveux."},
+      {"q": "Jonas fut dans le ventre du poisson pendant 7 jours.", "correct": false, "ref": "Jonas 1:17", "explain": "3 jours et 3 nuits."},
+      {"q": "L'arche d'alliance contenait les tables des commandements.", "correct": true, "ref": "Deutéronome 10:2", "explain": "Exact."},
+      {"q": "Ruth était la belle-mère de Naomi.", "correct": false, "ref": "Ruth 1:4", "explain": "Ruth était la belle-fille de Naomi."},
+      {"q": "Job était un homme parfaitement juste devant Dieu.", "correct": true, "ref": "Job 1:1", "explain": "Exact."},
+      {"q": "Les Israélites errèrent 40 ans dans le désert.", "correct": true, "ref": "Nombres 14:33", "explain": "Exact."},
+    ],
+    reflexion: [
+      {"topic": "Le Dîner Biblique", "question": "Quel est ton verset préféré de la Bible et pourquoi ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quel personnage de la Bible te ressemble le plus ?"},
+      {"topic": "Le Dîner Biblique", "question": "Si tu pouvais poser une question à Jésus, laquelle serait-ce ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quelle histoire biblique t'a le plus impressionné(e) ?"},
+      {"topic": "Le Dîner Biblique", "question": "Nomme un moment cette semaine où tu as ressenti la présence de Dieu."},
+      {"topic": "Le Dîner Biblique", "question": "Quel fruit de l'Esprit voudrais-tu développer davantage ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quelle promesse de Dieu compte le plus pour toi en ce moment ?"},
+      {"topic": "Le Dîner Biblique", "question": "Comment Dieu t'a-t-il répondu la dernière fois que tu as prié ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quel est le moment le plus difficile où tu as dû faire confiance à Dieu ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quelle qualité de Jésus aimerais-tu le plus imiter ?"},
+      {"topic": "Le Dîner Biblique", "question": "Nomme quelqu'un à qui tu voudrais partager l'Évangile."},
+      {"topic": "Le Dîner Biblique", "question": "Quel livre de la Bible n'as-tu jamais lu et que tu aimerais découvrir ?"},
+      {"topic": "Le Dîner Biblique", "question": "Si tu étais un personnage de la Bible, qui serais-tu et pourquoi ?"},
+      {"topic": "Le Dîner Biblique", "question": "Raconte une prière exaucée que tu n'oublieras jamais."},
+      {"topic": "Le Dîner Biblique", "question": "Comment est-ce que tu honores Dieu dans ton quotidien ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quelle parabole de Jésus change le plus ta façon de voir les autres ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quel verset biblique voudrais-tu mémoriser cette semaine ?"},
+      {"topic": "Le Dîner Biblique", "question": "Comment ta foi a-t-elle changé ta vie concrètement ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quelle valeur chrétienne est la plus importante dans notre famille ?"},
+      {"topic": "Le Dîner Biblique", "question": "Nomme une chose pour laquelle tu es reconnaissant(e) envers Dieu aujourd'hui."},
+      {"topic": "Le Dîner Biblique", "question": "Quel enseignement de la Bible trouves-tu le plus difficile à appliquer ?"},
+      {"topic": "Le Dîner Biblique", "question": "Raconte une fois où tu as dû pardonner quelqu'un comme Dieu le demande."},
+      {"topic": "Le Dîner Biblique", "question": "Quel miracle aimerais-tu voir Dieu accomplir dans ta vie cette année ?"},
+      {"topic": "Le Dîner Biblique", "question": "Si tu devais partager l'Évangile en 1 minute, que dirais-tu ?"},
+      {"topic": "Le Dîner Biblique", "question": "Comment pries-tu ? As-tu un endroit ou un moment spécial ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quel personnage biblique a le plus souffert et comment a-t-il gardé sa foi ?"},
+      {"topic": "Le Dîner Biblique", "question": "Qu'est-ce que la grâce de Dieu signifie pour toi personnellement ?"},
+      {"topic": "Le Dîner Biblique", "question": "Comment peux-tu être une lumière pour les gens autour de toi ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quelle chose dans la création de Dieu t'émerveille le plus ?"},
+      {"topic": "Le Dîner Biblique", "question": "Quel est ton souvenir le plus fort d'un moment de culte en famille ?"},
+    ],
+  },
+  expert: {
+    qcm: [
+      {"topic": "Culture biblique", "q": "Quel est le plus long chapitre de la Bible ?", "options": ["Psaume 23", "Psaume 119", "Genèse 1", "Apocalypse 21"], "correct": 1, "ref": "Psaume 119", "explain": "176 versets."},
+      {"topic": "Exode", "q": "Combien d'années les Israélites errèrent-ils dans le désert ?", "options": ["10 ans", "25 ans", "40 ans", "70 ans"], "correct": 2, "ref": "Nombres 14:33", "explain": "40 ans."},
+      {"topic": "Actes", "q": "Qui fut le premier martyr chrétien selon le livre des Actes ?", "options": ["Étienne", "Jacques", "Pierre", "Barnabas"], "correct": 0, "ref": "Actes 7", "explain": "Étienne."},
+      {"topic": "Prophètes", "q": "Quel prophète fut enlevé au ciel dans un char de feu ?", "options": ["Élisée", "Élie", "Ésaïe", "Jérémie"], "correct": 1, "ref": "2 Rois 2:11", "explain": "Élie."},
+      {"topic": "Nouveau Testament", "q": "Quel livre du Nouveau Testament a un auteur non nommé dans le texte, encore débattu aujourd'hui ?", "options": ["Jacques", "Hébreux", "Jude", "Apocalypse"], "correct": 1, "ref": "Épître aux Hébreux", "explain": "L'auteur reste anonyme et discuté."},
+      {"topic": "Rois", "q": "Qui fut le premier roi d'Israël ?", "options": ["Saül", "David", "Samuel", "Salomon"], "correct": 0, "ref": "1 Samuel 10:1", "explain": "Saül."},
+      {"topic": "Évangiles", "q": "Dans quel fleuve Jésus fut-il baptisé ?", "options": ["Le Jourdain", "Le Nil", "L'Euphrate", "Le Kison"], "correct": 0, "ref": "Marc 1:9", "explain": "Le Jourdain."},
+      {"topic": "Apocalypse", "q": "Quel est le dernier mot de la Bible ?", "options": ["Amen", "Alléluia", "Maranatha", "Shalom"], "correct": 0, "ref": "Apocalypse 22:21", "explain": "« Amen »."},
+      {"topic": "Culture biblique", "q": "Combien de livres compte la Bible entière (AT + NT) ?", "options": ["39", "27", "66", "73"], "correct": 2, "ref": "Canon protestant", "explain": "66 livres (39 + 27)."},
+      {"topic": "1 Rois", "q": "Combien de prophètes de Baal Élie affronta-t-il au mont Carmel ?", "options": ["50", "150", "450", "850"], "correct": 2, "ref": "1 Rois 18", "explain": "450 prophètes de Baal."},
+    ],
+    devinette: [
+      {"topic": "Figure biblique", "clues": ["Je suis à la fois roi et sacrificateur.", "J'ai béni Abraham après sa victoire militaire et reçu une dîme.", "L'épître aux Hébreux me présente comme une préfiguration du Christ."], "answer": "Melchisédek", "explain": "Roi-sacrificateur de Salem (Genèse 14, Hébreux 7).", "options": ["Josué", "Salomon", "Melchisédek", "Jacques"], "correct": 2},
+      {"topic": "Figure biblique", "clues": ["Je suis un pharisien, membre du sanhédrin.", "Je suis venu voir Jésus de nuit pour l'interroger.", "J'ai aidé à ensevelir le corps de Jésus avec Joseph d'Arimathée."], "answer": "Nicodème", "explain": "Nicodème (Jean 3, présent à la mise au tombeau).", "options": ["Judas Iscariote", "Ésaïe", "Nicodème", "Balaam"], "correct": 2},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis un tombeau découvert vide au troisième jour, signe de la victoire sur la mort."], "answer": "Le tombeau vide de Jésus", "explain": "La résurrection de Jésus (Matthieu 28).", "options": ["Jean-Baptiste", "Nathanaël", "Le tombeau vide de Jésus", "Adam"], "correct": 2},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis un disciple qui a douté de la résurrection de Jésus. J'ai dit que je ne croirais pas sans voir les marques des clous."], "answer": "Thomas", "explain": "Thomas (Jean 20:25).", "options": ["Timothée", "Thomas", "Balaam", "Jean"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis la foi qui permet de croire sans avoir vu. Jésus m'a déclaré heureux."], "answer": "La foi", "explain": "Jean 20:29.", "options": ["La foi", "Abraham", "Melchisédek", "Daniel"], "correct": 0},
+      {"topic": "Complète le verset", "clues": ["Je suis le verset qui dit que toutes choses concourent au bien de ceux qui aiment Dieu."], "answer": "Romains 8:28", "explain": "Romains 8:28.", "options": ["L'Apocalypse", "L'épître aux Romains", "Genèse", "Romains 8:28"], "correct": 3},
+      {"topic": "Complète le verset", "clues": ["Je suis le chapitre qui définit l'amour : il est patient, il est plein de bonté et ne périt jamais."], "answer": "1 Corinthiens 13", "explain": "1 Corinthiens 13, l'hymne à l'amour.", "options": ["L'épître aux Romains", "1 Corinthiens 13", "L'Apocalypse", "Job"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis l'apôtre qui a écrit plusieurs lettres du Nouveau Testament pour encourager les Églises."], "answer": "Paul", "explain": "L'apôtre Paul.", "options": ["David", "Paul", "Jérémie", "Pierre"], "correct": 1},
+      {"topic": "Complète le verset", "clues": ["Je suis le passage qui présente le fruit de l'Esprit."], "answer": "Galates 5:22-23", "explain": "Galates 5:22-23.", "options": ["Galates 5:22-23", "L'épître aux Romains", "Proverbes", "Genèse"], "correct": 0},
+      {"topic": "Qui suis-je ?", "clues": ["J'ai vécu 969 ans, l'homme ayant connu la plus grande longévité mentionnée dans la Bible."], "answer": "Mathusalem", "explain": "Genèse 5:27.", "options": ["Pierre", "Melchisédek", "Mathusalem", "André"], "correct": 2},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis le premier homme créé par Dieu."], "answer": "Adam", "explain": "Genèse 2:7.", "options": ["Joseph", "Jonas", "Adam", "Nicodème"], "correct": 2},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis la première femme créée par Dieu à partir de l'homme."], "answer": "Ève", "explain": "Genèse 2:22.", "options": ["Ève", "Esther", "Déborah", "Anne"], "correct": 0},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis le jardin où Dieu plaça Adam et Ève."], "answer": "Le jardin d'Éden", "explain": "Genèse 2:8.", "options": ["Babylone", "Le Golgotha", "Jérusalem", "Le jardin d'Éden"], "correct": 3},
+      {"topic": "Qui suis-je ?", "clues": ["On dit que j'étais plus sage que tous les hommes. J'ai construit le premier Temple de Jérusalem."], "answer": "Salomon", "explain": "1 Rois 3:12 ; 1 Rois 6.", "options": ["Ponce Pilate", "Salomon", "Noé", "Jacob"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis le roi qui a vaincu Goliath avant de devenir roi."], "answer": "David", "explain": "1 Samuel 17.", "options": ["Jean-Baptiste", "Néhémie", "Joseph", "David"], "correct": 3},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis le premier roi d'Israël choisi par Dieu."], "answer": "Saül", "explain": "1 Samuel 10.", "options": ["Abraham", "Saül", "Jacques", "Matthieu"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["J'ai demandé à Dieu la sagesse plutôt que la richesse."], "answer": "Salomon", "explain": "1 Rois 3:9-12.", "options": ["Salomon", "Noé", "André", "Philippe"], "correct": 0},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis le nombre symbolique associé à la Bête dans l'Apocalypse."], "answer": "666", "explain": "Apocalypse 13:18.", "options": ["Aucune de ces réponses", "666", "Aucune de ces réponses", "Aucune de ces réponses"], "correct": 1},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis le dernier livre de la Bible, qui parle de la fin des temps."], "answer": "L'Apocalypse", "explain": "Le livre de l'Apocalypse.", "options": ["L'Apocalypse", "L'épître aux Romains", "Proverbes", "Exode"], "correct": 0},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis la ville sainte décrite comme descendant du ciel dans l'Apocalypse."], "answer": "La Nouvelle Jérusalem", "explain": "Apocalypse 21:2.", "options": ["Énoch", "Moïse", "Joseph", "La Nouvelle Jérusalem"], "correct": 3},
+      {"topic": "Qui suis-je ?", "clues": ["Je suis celui qui dit : « Voici, je viens bientôt »."], "answer": "Jésus-Christ", "explain": "Apocalypse 22:20.", "options": ["Ponce Pilate", "Jacob", "Jésus-Christ", "Caïphe"], "correct": 2},
+      {"topic": "Personnages surprenants", "clues": ["J'ai aidé Jacob à obtenir les bénédictions de son père Isaac à la place de son frère Ésaü."], "answer": "Rébecca", "explain": "Genèse 27:5-10.", "options": ["Marie-Madeleine", "Naomi", "Ruth", "Rébecca"], "correct": 3},
+      {"topic": "Personnages surprenants", "clues": ["Je suis le seul personnage de la Bible à avoir accompagné Élie dans sa montée au ciel."], "answer": "Élisée", "explain": "2 Rois 2:11.", "options": ["Élisée", "Esdras", "David", "Samson"], "correct": 0},
+      {"topic": "Personnages surprenants", "clues": ["Je suis le devin dont l'ânesse parla pour m'empêcher de maudire Israël."], "answer": "Balaam", "explain": "Nombres 22:28-30.", "options": ["Jérémie", "Élie", "Jacques", "Balaam"], "correct": 3},
+      {"topic": "Personnages surprenants", "clues": ["Je suis la belle-mère de Ruth, qui lui dit de retourner dans son pays, mais Ruth refusa."], "answer": "Naomi", "explain": "Ruth 1:8-16.", "options": ["Naomi", "Déborah", "Miryam", "Rébecca"], "correct": 0},
+      {"topic": "Personnages surprenants", "clues": ["Je suis le scribe qui a lu la Loi devant tout le peuple sur la place publique."], "answer": "Esdras", "explain": "Néhémie 8:5.", "options": ["Néhémie", "Jean", "Esdras", "Judas Iscariote"], "correct": 2},
+      {"topic": "Grand défi final", "clues": ["Je suis l'apôtre décapité en premier parmi les Douze."], "answer": "Jacques (fils de Zébédée)", "explain": "Actes 12:2.", "options": ["Philippe", "Jean", "Jacques (fils de Zébédée)", "André"], "correct": 2},
+      {"topic": "Grand défi final", "clues": ["J'ai porté la croix de Jésus jusqu'au Golgotha."], "answer": "Simon de Cyrène", "explain": "Luc 23:26.", "options": ["Étienne", "Caïphe", "Nathanaël", "Simon de Cyrène"], "correct": 3},
+      {"topic": "Grand défi final", "clues": ["Je suis le gouverneur romain qui condamna Jésus malgré sa conviction d'innocence."], "answer": "Ponce Pilate", "explain": "Évangiles.", "options": ["Simon de Cyrène", "Ponce Pilate", "Samson", "Jean-Baptiste"], "correct": 1},
+      {"topic": "Grand défi final", "clues": ["Je suis le prophète transporté en vision de Babylone à Jérusalem."], "answer": "Ézéchiel", "explain": "Ézéchiel 8:3.", "options": ["Élie", "Philippe", "Adam", "Ézéchiel"], "correct": 3},
+      {"topic": "Grand défi final", "clues": ["Je suis devenu boiteux après une nuit de lutte avec un ange, mais j'ai été béni."], "answer": "Jacob", "explain": "Genèse 32:25.", "options": ["Jacob", "Timothée", "Mathusalem", "Abraham"], "correct": 0},
+      {"topic": "Grand défi final", "clues": ["Ma beauté brisa la résistance de Samson et je le livrai à ses ennemis."], "answer": "Dalila", "explain": "Juges 16:18.", "options": ["Naomi", "Ève", "Sara", "Dalila"], "correct": 3},
+      {"topic": "Grand défi final", "clues": ["Je suis le collaborateur fidèle de Paul, son fils dans la foi. Il écrivit deux épîtres pour moi."], "answer": "Timothée", "explain": "1 et 2 Timothée.", "options": ["Timothée", "Énoch", "Balaam", "Judas Iscariote"], "correct": 0},
+      {"topic": "Grand défi final", "clues": ["Je suis le grand prêtre devant qui Jésus fut d'abord conduit la nuit de son arrestation."], "answer": "Caïphe", "explain": "Jean 18:13.", "options": ["Pierre", "Caïphe", "Joseph", "Balaam"], "correct": 1},
+      {"topic": "Grand défi final", "clues": ["Je suis l'événement par lequel Dieu épargna Israël grâce au sang d'un agneau sur les portes."], "answer": "La Pâque", "explain": "Exode 12:13.", "options": ["Le baptême de Jésus", "La Pâque", "La dernière Cène", "La transfiguration"], "correct": 1},
+      {"topic": "Grand défi final", "clues": ["Je suis le livre de la Bible entièrement consacré à l'amour conjugal."], "answer": "Le Cantique des Cantiques", "explain": "Livre poétique de Salomon.", "options": ["Proverbes", "Le Cantique des Cantiques", "Ésaïe", "L'épître aux Romains"], "correct": 1},
+      {"topic": "Grand défi final", "clues": ["Je suis le disciple qui courut au tombeau et arriva le premier mais n'entra pas."], "answer": "Jean", "explain": "Jean 20:4-5.", "options": ["Jacques", "Daniel", "Salomon", "Jean"], "correct": 3},
+      {"topic": "Grand défi final", "clues": ["Je suis le roi perse qui permit aux Juifs de retourner en Israël et de reconstruire le Temple."], "answer": "Cyrus", "explain": "Esdras 1:1-3.", "options": ["Cyrus", "Jacques", "Mathusalem", "Simon de Cyrène"], "correct": 0},
+      {"topic": "Grand défi final", "clues": ["Je suis le fils qui quitta son père avec son héritage, le dépensa, puis revint misérable."], "answer": "Le fils prodigue", "explain": "Luc 15.", "options": ["Le semeur", "Le fils prodigue", "Le bon Samaritain", "La brebis perdue"], "correct": 1},
+      {"topic": "Grand défi final", "clues": ["Je suis le dernier mot de toute la Bible."], "answer": "Amen", "explain": "Apocalypse 22:21.", "options": ["Amen", "Hosanna", "Shalom", "Alléluia"], "correct": 0},
+    ],
+    memoire: [
+      {"topic": "Béatitude 1", "clues": ["« Heureux les pauvres en esprit, car... »"], "answer": "le royaume des cieux est à eux !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["ils obtiendront miséricorde !", "le royaume des cieux est à eux !", "ils seront rassasiés !", "ils seront appelés fils de Dieu !"], "correct": 1},
+      {"topic": "Béatitude 2", "clues": ["« Heureux ceux qui pleurent, car... »"], "answer": "ils seront consolés !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["ils verront Dieu !", "ils obtiendront miséricorde !", "ils hériteront la terre !", "ils seront consolés !"], "correct": 3},
+      {"topic": "Béatitude 3", "clues": ["« Heureux les débonnaires, car... »"], "answer": "ils hériteront la terre !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["ils seront consolés !", "ils seront appelés fils de Dieu !", "ils hériteront la terre !", "ils verront Dieu !"], "correct": 2},
+      {"topic": "Béatitude 4", "clues": ["« Heureux ceux qui ont faim et soif de la justice, car... »"], "answer": "ils seront rassasiés !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["le royaume des cieux est à eux !", "ils seront rassasiés !", "ils hériteront la terre !", "ils seront appelés fils de Dieu !"], "correct": 1},
+      {"topic": "Béatitude 5", "clues": ["« Heureux les miséricordieux, car... »"], "answer": "ils obtiendront miséricorde !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["ils obtiendront miséricorde !", "ils hériteront la terre !", "le royaume des cieux est à eux !", "ils seront rassasiés !"], "correct": 0},
+      {"topic": "Béatitude 6", "clues": ["« Heureux ceux qui ont le cœur pur, car... »"], "answer": "ils verront Dieu !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["ils seront consolés !", "ils verront Dieu !", "ils seront appelés fils de Dieu !", "ils obtiendront miséricorde !"], "correct": 1},
+      {"topic": "Béatitude 7", "clues": ["« Heureux ceux qui procurent la paix, car... »"], "answer": "ils seront appelés fils de Dieu !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["ils seront rassasiés !", "le royaume des cieux est à eux !", "ils hériteront la terre !", "ils seront appelés fils de Dieu !"], "correct": 3},
+      {"topic": "Béatitude 8", "clues": ["« Heureux ceux qui sont persécutés pour la justice, car... »"], "answer": "le royaume des cieux est à eux !", "explain": "Matthieu 5:3-12, à mémoriser dans l'ordre.", "options": ["ils seront consolés !", "ils seront rassasiés !", "ils verront Dieu !", "le royaume des cieux est à eux !"], "correct": 3},
+      {"topic": "Commandement 1", "clues": ["Quel est le 1e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu n'auras pas d'autres dieux devant ma face.", "explain": "Monothéisme absolu, Dieu seul est Dieu. (Exode 20)", "options": ["Tu n'auras pas d'autres dieux devant ma face.", "Tu ne convoiteras point.", "Tu ne commettras point d'adultère.", "Tu ne prendras pas le nom de l'Éternel ton Dieu en vain."], "correct": 0},
+      {"topic": "Commandement 2", "clues": ["Quel est le 2e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu ne te feras pas d'idole taillée.", "explain": "Interdiction de l'idolâtrie sous toutes ses formes. (Exode 20)", "options": ["Tu ne porteras point de faux témoignage.", "Tu ne prendras pas le nom de l'Éternel ton Dieu en vain.", "Tu ne te feras pas d'idole taillée.", "Tu ne convoiteras point."], "correct": 2},
+      {"topic": "Commandement 3", "clues": ["Quel est le 3e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu ne prendras pas le nom de l'Éternel ton Dieu en vain.", "explain": "Respect sacré du nom de Dieu. (Exode 20)", "options": ["Tu ne prendras pas le nom de l'Éternel ton Dieu en vain.", "Tu n'auras pas d'autres dieux devant ma face.", "Tu ne déroberas point.", "Tu ne convoiteras point."], "correct": 0},
+      {"topic": "Commandement 4", "clues": ["Quel est le 4e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Souviens-toi du jour du repos pour le sanctifier.", "explain": "Consacrer le 7e jour à Dieu et au repos. (Exode 20)", "options": ["Tu ne déroberas point.", "Tu ne commettras point de meurtre.", "Souviens-toi du jour du repos pour le sanctifier.", "Tu n'auras pas d'autres dieux devant ma face."], "correct": 2},
+      {"topic": "Commandement 5", "clues": ["Quel est le 5e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Honore ton père et ta mère.", "explain": "Première promesse attachée à un commandement. (Exode 20)", "options": ["Honore ton père et ta mère.", "Tu ne commettras point de meurtre.", "Tu ne te feras pas d'idole taillée.", "Tu n'auras pas d'autres dieux devant ma face."], "correct": 0},
+      {"topic": "Commandement 6", "clues": ["Quel est le 6e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu ne commettras point de meurtre.", "explain": "Sacralité de la vie humaine créée à l'image de Dieu. (Exode 20)", "options": ["Tu ne commettras point de meurtre.", "Tu ne commettras point d'adultère.", "Tu ne convoiteras point.", "Tu n'auras pas d'autres dieux devant ma face."], "correct": 0},
+      {"topic": "Commandement 7", "clues": ["Quel est le 7e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu ne commettras point d'adultère.", "explain": "Fidélité dans le mariage, image de l'alliance. (Exode 20)", "options": ["Tu ne convoiteras point.", "Tu ne commettras point d'adultère.", "Souviens-toi du jour du repos pour le sanctifier.", "Tu n'auras pas d'autres dieux devant ma face."], "correct": 1},
+      {"topic": "Commandement 8", "clues": ["Quel est le 8e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu ne déroberas point.", "explain": "Respect du bien d'autrui et de sa dignité. (Exode 20)", "options": ["Tu ne porteras point de faux témoignage.", "Tu ne convoiteras point.", "Tu ne déroberas point.", "Tu ne commettras point de meurtre."], "correct": 2},
+      {"topic": "Commandement 9", "clues": ["Quel est le 9e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu ne porteras point de faux témoignage.", "explain": "Intégrité et vérité dans la parole. (Exode 20)", "options": ["Tu ne déroberas point.", "Tu ne convoiteras point.", "Tu ne porteras point de faux témoignage.", "Tu n'auras pas d'autres dieux devant ma face."], "correct": 2},
+      {"topic": "Commandement 10", "clues": ["Quel est le 10e commandement donné à Moïse sur le mont Sinaï ?"], "answer": "Tu ne convoiteras point.", "explain": "Maîtrise du cœur : le péché commence dans les pensées. (Exode 20)", "options": ["Tu ne porteras point de faux témoignage.", "Tu ne commettras point de meurtre.", "Tu ne convoiteras point.", "Tu ne prendras pas le nom de l'Éternel ton Dieu en vain."], "correct": 2},
+    ],
+    versets: [
+      {"topic": "Jean 4:24", "clues": ["« Dieu est esprit, et il faut que ceux qui l'adorent... »"], "answer": "l'adorent en esprit et en vérité", "explain": "Jean 4:24 — sur la nature de Dieu.", "isOpen": true},
+      {"topic": "Malachie 3:6", "clues": ["« Car je suis l'Éternel, je... »"], "answer": "ne change pas", "explain": "Malachie 3:6 — l'immutabilité de Dieu.", "isOpen": true},
+      {"topic": "Psaume 90:2", "clues": ["« Avant que les montagnes fussent nées, avant que tu eusses formé la terre et le monde, d'éternité en éternité... »"], "answer": "tu es Dieu", "explain": "Psaume 90:2 — l'éternité de Dieu.", "isOpen": true},
+      {"topic": "Exode 34:6", "clues": ["« L'Éternel, l'Éternel, Dieu miséricordieux et compatissant, lent à la colère... »"], "answer": "riche en bonté et en fidélité", "explain": "Exode 34:6 — le caractère de Dieu révélé à Moïse.", "isOpen": true},
+      {"topic": "1 Jean 4:8", "clues": ["« Celui qui n'aime pas n'a pas connu Dieu, car... »"], "answer": "Dieu est amour", "explain": "1 Jean 4:8 — la nature de Dieu est amour.", "isOpen": true},
+      {"topic": "Jean 1:1", "clues": ["« Au commencement était la Parole, et la Parole était avec Dieu, et... »"], "answer": "la Parole était Dieu", "explain": "Jean 1:1 — la divinité du Christ.", "isOpen": true},
+      {"topic": "Psaume 139:1-2", "clues": ["« Ô Éternel, tu me sondes et tu me connais, tu sais quand je... »"], "answer": "m'assieds et quand je me lève", "explain": "Psaume 139 — l'omniscience de Dieu.", "isOpen": true},
+      {"topic": "Psaume 139:7-8", "clues": ["« Où irais-je loin de ton Esprit, et où fuirais-je loin de... »"], "answer": "ta face ?", "explain": "Psaume 139 — l'omniprésence de Dieu.", "isOpen": true},
+      {"topic": "Jeu 80 — Le Salut", "clues": ["Quel est le salaire du péché selon Romains 6:23 ?"], "answer": "la mort", "explain": "Jeu 80 — Le Salut.", "isOpen": true},
+      {"topic": "Jeu 80 — Le Salut", "clues": ["Quel est le don gratuit de Dieu selon Romains 6:23 ?"], "answer": "la vie éternelle en Jésus-Christ", "explain": "Jeu 80 — Le Salut.", "isOpen": true},
+      {"topic": "Jeu 80 — Le Salut", "clues": ["Comment Dieu a-t-il prouvé son amour envers nous selon Romains 5:8 ?"], "answer": "Christ est mort pour nous quand nous étions encore pécheurs", "explain": "Jeu 80 — Le Salut.", "isOpen": true},
+      {"topic": "Jeu 81 — La Prière", "clues": ["Que devons-nous faire sans cesse selon 1 Thessaloniciens 5:17 ?"], "answer": "prier", "explain": "Jeu 81 — La Prière.", "isOpen": true},
+      {"topic": "Jeu 81 — La Prière", "clues": ["Quelle promesse Jésus donne-t-il si nous demeurons en lui selon Jean 15:7 ?"], "answer": "demandez ce que vous voudrez, et cela vous sera accordé", "explain": "Jeu 81 — La Prière.", "isOpen": true},
+      {"topic": "Jeu 81 — La Prière", "clues": ["Que devons-nous faire pour nous approcher de Dieu selon Jacques 4:8 ?"], "answer": "nous approcher de Dieu, et il s'approchera de nous", "explain": "Jeu 81 — La Prière.", "isOpen": true},
+      {"topic": "Jeu 82 — La Sanctification", "clues": ["Par quoi devons-nous être transformés selon Romains 12:2 ?"], "answer": "le renouvellement de l'intelligence", "explain": "Jeu 82 — La Sanctification.", "isOpen": true},
+      {"topic": "Jeu 82 — La Sanctification", "clues": ["Que devons-nous revêtir pour résister au diable selon Éphésiens 6:11 ?"], "answer": "toutes les armes de Dieu", "explain": "Jeu 82 — La Sanctification.", "isOpen": true},
+      {"topic": "Jeu 82 — La Sanctification", "clues": ["Que devons-nous faire au diable selon Jacques 4:7 ?"], "answer": "résister au diable, et il fuira loin de vous", "explain": "Jeu 82 — La Sanctification.", "isOpen": true},
+      {"topic": "Jeu 83 — L'Église", "clues": ["À quoi l'Église est-elle comparée dans 1 Corinthiens 12:12 ?"], "answer": "un corps avec plusieurs membres", "explain": "Jeu 83 — L'Église.", "isOpen": true},
+      {"topic": "Jeu 83 — L'Église", "clues": ["Qui est la tête de l'Église selon Colossiens 1:18 ?"], "answer": "Christ", "explain": "Jeu 83 — L'Église.", "isOpen": true},
+      {"topic": "Jeu 83 — L'Église", "clues": ["Que se passe-t-il lorsque deux ou trois sont assemblés au nom de Jésus, selon Matthieu 18:20 ?"], "answer": "il est au milieu d'eux", "explain": "Jeu 83 — L'Église.", "isOpen": true},
+      {"topic": "Jeu 84 — Prophéties messianiques", "clues": ["Quelle prophétie annonce la naissance virginale du Messie ?"], "answer": "Ésaïe 7:14, accomplie en Matthieu 1:23", "explain": "Jeu 84 — Prophéties messianiques.", "isOpen": true},
+      {"topic": "Jeu 84 — Prophéties messianiques", "clues": ["Quelle prophétie annonce la naissance du Messie à Bethléhem ?"], "answer": "Michée 5:1, accomplie en Matthieu 2:1", "explain": "Jeu 84 — Prophéties messianiques.", "isOpen": true},
+      {"topic": "Jeu 84 — Prophéties messianiques", "clues": ["Quel cri de Jésus sur la croix accomplit le Psaume 22:1 ?"], "answer": "« Mon Dieu, mon Dieu, pourquoi m'as-tu abandonné ? »", "explain": "Jeu 84 — Prophéties messianiques.", "isOpen": true},
+      {"topic": "Jeu 85 — Eschatologie", "clues": ["Quel mystère Paul révèle-t-il dans 1 Corinthiens 15:51-52 ?"], "answer": "nous serons tous changés, en un instant, en un clin d'œil", "explain": "Jeu 85 — Eschatologie.", "isOpen": true},
+      {"topic": "Jeu 85 — Eschatologie", "clues": ["Quelle promesse trouve-t-on dans Apocalypse 21:3 ?"], "answer": "Dieu habitera avec les hommes, il essuiera toute larme", "explain": "Jeu 85 — Eschatologie.", "isOpen": true},
+      {"topic": "Jeu 85 — Eschatologie", "clues": ["Quelle est la dernière prière exprimée par l'Église dans Apocalypse 22:20 ?"], "answer": "« Viens, Seigneur Jésus ! »", "explain": "Jeu 85 — Eschatologie.", "isOpen": true},
+    ],
+    vf: [
+      {"q": "Le Psaume 23 commence par « L'Éternel est mon berger ».", "correct": true, "ref": "Psaume 23:1", "explain": "Exact."},
+      {"q": "Salomon a écrit le livre des Proverbes.", "correct": true, "ref": "Proverbes 1:1", "explain": "Salomon en est le principal auteur, avec d'autres contributeurs."},
+      {"q": "Le livre de Job est le plus court de l'Ancien Testament.", "correct": false, "ref": "Livre de Job", "explain": "Job est au contraire un livre très long."},
+      {"q": "L'Ecclésiaste enseigne que tout est vanité.", "correct": true, "ref": "Ecclésiaste 1:2", "explain": "Exact."},
+      {"q": "Les Psaumes comptent 150 chants.", "correct": true, "ref": "Livre des Psaumes", "explain": "Exact."},
+      {"q": "David a écrit tous les Psaumes.", "correct": false, "ref": "Livre des Psaumes", "explain": "David en a écrit beaucoup, mais pas tous."},
+      {"q": "La première béatitude est « Heureux les doux ».", "correct": false, "ref": "Matthieu 5:3", "explain": "C'est « Heureux les pauvres en esprit »."},
+      {"q": "Le Cantique des Cantiques parle de l'amour conjugal.", "correct": true, "ref": "Cantique des Cantiques", "explain": "Selon la tradition dominante d'interprétation."},
+      {"q": "Proverbes 3:5 enseigne de se confier en l'Éternel.", "correct": true, "ref": "Proverbes 3:5", "explain": "Exact."},
+      {"q": "Job perdit tout mais ne pécha pas contre Dieu.", "correct": true, "ref": "Job 1:22", "explain": "Exact."},
+    ],
+  },
+};
+
+const BADGES = [
+  { id: 'first', emoji: '🏅', name: 'Premier défi', desc: 'Termine ton 1er challenge', check: p => p.completed >= 1 },
+  { id: 'perfect', emoji: '🏆', name: 'Score parfait', desc: '100% sur un défi', check: p => p.perfects >= 1 },
+  { id: 'explorer', emoji: '🧭', name: 'Explorateur', desc: 'Essaie les 4 catégories', check: p => Object.keys(p.categoriesPlayed || {}).length >= 4 },
+  { id: 'allmodes', emoji: '🎲', name: 'Touche-à-tout', desc: 'Essaie les 4 types de jeu', check: p => (p.modesPlayed || []).length >= 4 },
+  { id: 'five', emoji: '🎯', name: 'Persévérant', desc: '5 défis complétés', check: p => p.completed >= 5 },
+  { id: 'master', emoji: '⭐', name: 'Maître biblique', desc: 'Moyenne ≥ 80% sur 3 défis', check: p => p.completed >= 3 && p.avgScore >= 80 },
+  { id: 'expertcat', emoji: '🎓', name: 'Niveau Expert', desc: 'Termine un défi Bible Expert', check: p => (p.categoriesPlayed || {}).expert >= 1 },
+  { id: 'ten', emoji: '👑', name: 'Champion TruthPath', desc: '10 défis complétés', check: p => p.completed >= 10 },
+  { id: 'streak10', emoji: '🔥', name: 'Série parfaite', desc: '10 bonnes réponses d\'affilée', check: p => (p.maxStreak || 0) >= 10 },
+];
+
+/* ================= UNIVERSAL STORAGE LAYER =================
+   window.storage only exists inside Claude's own preview. Once this
+   file is hosted elsewhere (GitHub Pages, Netlify...), it does not
+   exist — so we fall back to localStorage, which works in every
+   real browser. Shared data (the leaderboard) can only be TRULY
+   shared across visitors via window.storage (inside Claude) or a
+   real backend; once hosted standalone, "shared" falls back to
+   this browser only — see the note shown on the leaderboard screen. */
+const hasClaudeStorage = typeof window.storage !== 'undefined';
+
+async function storageGet(key, shared){
+  if (hasClaudeStorage) {
+    try { return await window.storage.get(key, shared); } catch(e) { return null; }
+  }
+  try {
+    const raw = localStorage.getItem((shared ? 'shared_' : 'local_') + key);
+    return raw !== null ? { key, value: raw, shared } : null;
+  } catch(e) { return null; }
+}
+async function storageSet(key, value, shared){
+  if (hasClaudeStorage) {
+    try { return await window.storage.set(key, value, shared); } catch(e) { return null; }
+  }
+  try {
+    localStorage.setItem((shared ? 'shared_' : 'local_') + key, value);
+    return { key, value, shared };
+  } catch(e) { return null; }
+}
+
+/* ================= PROFILE (persisted, personal) ================= */
+let profile = { completed: 0, perfects: 0, totalScorePercent: 0, avgScore: 0, categoriesPlayed: {}, modesPlayed: [], unlockedBadges: [], maxStreak: 0 };
+
+async function loadProfile(){
+  const res = await storageGet('bc_profile', false);
+  if (res && res.value) { try { profile = Object.assign(profile, JSON.parse(res.value)); } catch(e){} }
+  refreshHomeStats();
+  const nameRes = await storageGet('bc_playername', false);
+  if (nameRes && nameRes.value) {
+    app.querySelector('#pseudo-input').value = nameRes.value;
+    app.querySelector('#profil-pseudo-input').value = nameRes.value;
+  }
+}
+async function saveProfile(){
+  await storageSet('bc_profile', JSON.stringify(profile), false);
+}
+
+function refreshHomeStats(){
+  app.querySelector('#stat-completed').textContent = profile.completed;
+  app.querySelector('#stat-best').textContent = Math.round(profile.completed ? profile.avgScore : 0) + '%';
+  const unlocked = BADGES.filter(b => b.check(profile)).length;
+  app.querySelector('#stat-badges').textContent = unlocked + '/' + BADGES.length;
+}
+
+/* ================= NAVIGATION ================= */
+const app = document.getElementById('app');
+function nav(screenId){
+  app.querySelectorAll('.bc-screen').forEach(s => s.classList.remove('active'));
+  app.querySelector('#' + screenId).classList.add('active');
+}
+app.querySelectorAll('[data-nav]').forEach(btn => btn.addEventListener('click', () => nav(btn.getAttribute('data-nav'))));
+app.querySelector('#go-badges').addEventListener('click', () => { renderBadges(); nav('scr-badges'); });
+app.querySelector('#go-leaderboard').addEventListener('click', () => { nav('scr-leaderboard'); loadLeaderboard(); });
+app.querySelector('#go-profil').addEventListener('click', () => { renderProfilScreen(); nav('scr-profil'); });
+app.querySelector('#profil-go-badges').addEventListener('click', () => { renderBadges(); nav('scr-badges'); });
+app.querySelector('#home-boutique-teaser').addEventListener('click', () => nav('scr-boutique'));
+app.querySelector('#go-boutique').addEventListener('click', () => nav('scr-boutique'));
+app.querySelector('#go-toc').addEventListener('click', () => { renderToc(); nav('scr-toc'); });
+
+function renderToc(){
+  const box = app.querySelector('#toc-list');
+  box.innerHTML = BOOK_TOC.map(section => {
+    const partiesHtml = section.parties.map(p => {
+      const available = p.modeKey && QUESTIONS[section.catId] && QUESTIONS[section.catId][p.modeKey];
+      if (available) {
+        return `<div class="bc-toc-partie-row clickable" data-cat="${section.catId}" data-mode="${p.modeKey}">
+          <div><div class="bc-toc-partie-name">Partie ${p.partie} — ${p.name}</div><div class="bc-toc-partie-range">${p.jeuRange}</div></div>
+          <span class="bc-toc-partie-arrow">▶</span>
+        </div>`;
+      }
+      return `<div class="bc-toc-partie-row">
+        <div><div class="bc-toc-partie-name">Partie ${p.partie} — ${p.name}</div><div class="bc-toc-partie-range">${p.jeuRange}</div></div>
+        <span class="bc-toc-partie-locked">Bientôt dans l'app</span>
+      </div>`;
+    }).join('');
+    return `<div class="bc-toc-section">
+      <div class="bc-toc-section-header">
+        <div class="bc-toc-section-num">${section.section}</div>
+        <div><div class="bc-toc-section-title">${section.title}</div><div class="bc-toc-section-age">${section.ageLabel}</div></div>
+      </div>
+      ${partiesHtml}
+    </div>`;
+  }).join('');
+  box.querySelectorAll('.bc-toc-partie-row.clickable').forEach(row => {
+    row.addEventListener('click', () => showInstructions(row.dataset.cat, row.dataset.mode));
+  });
+}
+
+// TODO: replace with the real TruthPath Éditions Chariow product link
+app.querySelector('#boutique-book-link').href = 'https://chariow.com/truthpath-editions';
+
+let pseudoSaveTimer = null;
+app.querySelector('#profil-pseudo-input').addEventListener('input', (e) => {
+  const val = e.target.value;
+  app.querySelector('#pseudo-input').value = val; // keep results-screen field in sync
+  clearTimeout(pseudoSaveTimer);
+  pseudoSaveTimer = setTimeout(() => storageSet('bc_playername', val.trim(), false), 400);
+});
+
+app.querySelector('#profil-reset-btn').addEventListener('click', () => {
+  if (!confirm('Réinitialiser toute ta progression (défis joués, badges, série) ? Cette action est irréversible.')) return;
+  profile = { completed: 0, perfects: 0, totalScorePercent: 0, avgScore: 0, categoriesPlayed: {}, modesPlayed: [], unlockedBadges: [], maxStreak: 0 };
+  saveProfile();
+  refreshHomeStats();
+  renderProfilScreen();
+});
+
+function renderProfilScreen(){
+  app.querySelector('#profil-completed').textContent = profile.completed || 0;
+  app.querySelector('#profil-avg').textContent = Math.round(profile.completed ? profile.avgScore : 0) + '%';
+  app.querySelector('#profil-perfect').textContent = profile.perfects || 0;
+  app.querySelector('#profil-streak').textContent = profile.maxStreak || 0;
+  const catBox = app.querySelector('#profil-categories');
+  const played = Object.keys(profile.categoriesPlayed || {});
+  if (!played.length) {
+    catBox.innerHTML = '<div class="bc-profil-cat-row" style="justify-content:center;color:#9a9aa8;font-weight:600">Aucun défi joué pour l\'instant</div>';
+  } else {
+    catBox.innerHTML = played.map(id => {
+      const cat = CATEGORIES.find(c => c.id === id);
+      const count = profile.categoriesPlayed[id];
+      return `<div class="bc-profil-cat-row"><span>${cat ? cat.icon + ' ' + cat.name : id}</span><span>${count} défi${count>1?'s':''}</span></div>`;
+    }).join('');
+  }
+}
+
+/* ================= HOME: render categories ================= */
+function renderCategories(){
+  const grid = app.querySelector('#cat-grid');
+  grid.innerHTML = '';
+  CATEGORIES.forEach(cat => {
+    const nModes = Object.keys(QUESTIONS[cat.id]).length;
+    const card = document.createElement('div');
+    card.className = 'bc-cat-card';
+    card.innerHTML = `
+      <div class="bc-cat-icon" style="background:${cat.color}20;color:${cat.color}">${cat.icon}</div>
+      <div class="bc-cat-name">${cat.name}</div>
+      <div class="bc-cat-age">${cat.ageLabel} · ${nModes} jeux</div>
+      <div class="bc-cat-diff" style="background:${cat.color}">${cat.diff}</div>
+    `;
+    card.addEventListener('click', () => openCategory(cat.id));
+    grid.appendChild(card);
+  });
+}
+
+/* ================= CATEGORY SCREEN ================= */
+function openCategory(catId){
+  const currentCat = CATEGORIES.find(c => c.id === catId);
+  const struct = BOOK_STRUCTURE[catId];
+  app.querySelector('#cat-age-label').textContent = `SECTION ${struct.section} · ${currentCat.ageLabel.toUpperCase()}`;
+  app.querySelector('#cat-name').textContent = currentCat.icon + ' ' + struct.sectionTitle;
+  const list = app.querySelector('#mode-list');
+  list.innerHTML = '';
+  Object.keys(QUESTIONS[catId]).forEach(modeKey => {
+    const meta = MODE_META[modeKey];
+    const partieInfo = struct.parties[modeKey];
+    const count = QUESTIONS[catId][modeKey].length;
+    const card = document.createElement('div');
+    card.className = 'bc-mode-card';
+    const tag = partieInfo && !partieInfo.bonus
+      ? `<span class="bc-partie-tag">Partie ${partieInfo.partie} · ${partieInfo.jeuRange}</span>`
+      : `<span class="bc-partie-tag bonus">🎁 Contenu bonus</span>`;
+    const modeTitle = partieInfo ? partieInfo.name : meta.title;
+    card.innerHTML = `
+      <div class="bc-mode-emoji">${meta.emoji}</div>
+      <div class="bc-mode-info">
+        <div class="bc-mode-title">${modeTitle}</div>
+        ${tag}
+        <div class="bc-mode-desc">${meta.desc} · ${count} question${count>1?'s':''}</div>
+      </div>
+      <button class="bc-mode-play">Jouer</button>
+    `;
+    card.querySelector('.bc-mode-play').addEventListener('click', () => showInstructions(catId, modeKey));
+    list.appendChild(card);
+  });
+  nav('scr-category');
+}
+
+/* ---- Instructions screen (book's own methodology text) shown before a game starts ---- */
+function showInstructions(catId, modeKey){
+  const struct = BOOK_STRUCTURE[catId];
+  const partieInfo = struct.parties[modeKey];
+  const meta = MODE_META[modeKey];
+  const cat = CATEGORIES.find(c => c.id === catId);
+
+  app.querySelector('#instr-emoji').textContent = meta.emoji;
+  app.querySelector('#instr-title').textContent = partieInfo ? partieInfo.name : meta.title;
+  app.querySelector('#instr-tag').textContent = partieInfo && !partieInfo.bonus
+    ? `Partie ${partieInfo.partie} · ${partieInfo.jeuRange}`
+    : `🎁 Contenu bonus`;
+  app.querySelector('#instr-text').textContent = partieInfo ? partieInfo.instructions : "Amuse-toi bien avec ce défi !";
+  const startBtn = app.querySelector('#instr-start-btn');
+  startBtn.onclick = () => startGame(catId, modeKey);
+  nav('scr-instructions');
+}
+
+/* ================= GAME ENGINE ================= */
+let gameState = null;
+const TIME_PER_Q = 15;
+
+function startGame(catId, modeKey){
+  gameState = {
+    catId, modeKey,
+    items: QUESTIONS[catId][modeKey],
+    index: 0,
+    points: 0,
+    maxPoints: 0,
+    correctCount: 0,
+    wrongCount: 0,
+    timer: null,
+    timeLeft: TIME_PER_Q,
+    answered: false,
+    streak: 0,
+    maxStreakThisGame: 0,
+    streakBonusGiven: {},
+  };
+  updateStreakPill();
+  nav('scr-game');
+  loadItem();
+}
+
+function updateProgress(){
+  app.querySelector('#qcount').textContent = (gameState.index + 1) + '/' + gameState.items.length;
+  app.querySelector('#progress-fill').style.width = (gameState.index / gameState.items.length * 100) + '%';
+}
+function updateStreakPill(){
+  const pill = app.querySelector('#streak-pill');
+  if (gameState.streak >= 2) {
+    pill.classList.add('show');
+    app.querySelector('#streak-val').textContent = gameState.streak;
+  } else {
+    pill.classList.remove('show');
+  }
+}
+
+function loadItem(){
+  gameState.answered = false;
+  updateProgress();
+  const body = app.querySelector('#game-body');
+  if (gameState.modeKey === 'qcm') renderQCM(body);
+  else if (gameState.modeKey === 'vf') renderVF(body);
+  else if (gameState.modeKey === 'devinette' || gameState.modeKey === 'charade' || gameState.modeKey === 'memoire' || gameState.modeKey === 'quisuisje') renderDevinette(body);
+  else if (gameState.modeKey === 'motsmeles') renderMotsMeles(body);
+  else if (gameState.modeKey === 'versets') renderVersets(body);
+  else if (gameState.modeKey === 'reflexion') renderReflexion(body);
+}
+
+function startTimer(onExpire){
+  clearInterval(gameState.timer);
+  gameState.timeLeft = TIME_PER_Q;
+  const fg = app.querySelector('#timer-fg');
+  const num = app.querySelector('#timer-num');
+  const CIRC = 2 * Math.PI * 24;
+  function paint(){
+    num.textContent = Math.max(gameState.timeLeft, 0);
+    fg.style.strokeDashoffset = CIRC * (1 - gameState.timeLeft / TIME_PER_Q);
+    fg.style.stroke = gameState.timeLeft <= 4 ? 'var(--red)' : 'var(--steel)';
+  }
+  paint();
+  gameState.timer = setInterval(() => {
+    gameState.timeLeft--;
+    paint();
+    if (gameState.timeLeft <= 0) { clearInterval(gameState.timer); if (!gameState.answered) onExpire(); }
+  }, 1000);
+}
+
+function timerHTML(){
+  return `<div class="bc-timer-wrap"><svg viewBox="0 0 56 56">
+    <circle class="bc-timer-bg" cx="28" cy="28" r="24"></circle>
+    <circle class="bc-timer-fg" id="timer-fg" cx="28" cy="28" r="24" stroke-dasharray="150.8"></circle>
+  </svg><div class="bc-timer-num" id="timer-num">15</div></div>`;
+}
+
+function nextControls(){
+  return `<button class="bc-next-btn" id="next-btn">Question suivante →</button>`;
+}
+function wireNext(){
+  app.querySelector('#next-btn').addEventListener('click', () => {
+    gameState.index++;
+    if (gameState.index >= gameState.items.length) { app.querySelector('#progress-fill').style.width = '100%'; finishGame(); }
+    else loadItem();
+  });
+}
+
+/* ---- streak handling: returns bonus points earned (0 if none) and label if milestone hit ---- */
+function registerStreak(isCorrect){
+  if (isCorrect) {
+    gameState.streak++;
+    gameState.maxStreakThisGame = Math.max(gameState.maxStreakThisGame, gameState.streak);
+  } else {
+    gameState.streak = 0;
+  }
+  updateStreakPill();
+  let bonus = 0, label = null;
+  if (isCorrect && gameState.streak === 5 && !gameState.streakBonusGiven[5]) { bonus = 10; label = "🔥 Série de 5 d'affilée !"; gameState.streakBonusGiven[5] = true; }
+  if (isCorrect && gameState.streak === 10 && !gameState.streakBonusGiven[10]) { bonus = 25; label = "🔥🔥 Série de 10 d'affilée !"; gameState.streakBonusGiven[10] = true; }
+  return { bonus, label };
+}
+function streakFlagHTML(streakInfo){
+  if (!streakInfo || !streakInfo.bonus) return '';
+  return `<div class="bc-streak-flag">${streakInfo.label} Bonus de série : +${streakInfo.bonus} points</div>`;
+}
+
+/* ---- QCM ---- */
+function renderQCM(body){
+  const item = gameState.items[gameState.index];
+  gameState.maxPoints += 10;
+  const letters = ['A','B','C','D'];
+  body.innerHTML = `
+    ${timerHTML()}
+    <div class="bc-q-card">
+      <div class="bc-q-topic">${item.topic.toUpperCase()}</div>
+      <div class="bc-q-text">${item.q}</div>
+      <div class="bc-answers" id="answers">
+        ${item.options.map((o,i) => `<button class="bc-answer-btn" data-i="${i}"><span class="bc-answer-letter">${letters[i]}</span><span>${o}</span></button>`).join('')}
+      </div>
+      <div class="bc-feedback" id="feedback"></div>
+      ${nextControls()}
+    </div>
+  `;
+  body.querySelectorAll('.bc-answer-btn').forEach(btn => btn.addEventListener('click', () => answerQCM(parseInt(btn.dataset.i))));
+  wireNext();
+  startTimer(() => answerQCM(-1));
+}
+function answerQCM(selected){
+  if (gameState.answered) return;
+  gameState.answered = true;
+  clearInterval(gameState.timer);
+  const item = gameState.items[gameState.index];
+  const buttons = app.querySelectorAll('.bc-answer-btn');
+  buttons.forEach(b => {
+    const i = parseInt(b.dataset.i);
+    b.disabled = true;
+    if (i === item.correct) b.classList.add('correct');
+    else if (i === selected) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  const ok = selected === item.correct;
+  const bonus = ok ? (gameState.timeLeft >= 10 ? 10 : gameState.timeLeft >= 5 ? 8 : 6) : 0;
+  const streakInfo = registerStreak(ok);
+  gameState.points += bonus + streakInfo.bonus;
+  gameState.maxPoints += streakInfo.bonus ? 0 : 0;
+  if (ok) gameState.correctCount++; else gameState.wrongCount++;
+  const fb = app.querySelector('#feedback');
+  fb.className = 'bc-feedback show ' + (ok ? 'ok' : 'ko');
+  fb.innerHTML = `<b>${ok ? 'Excellent ! +' + bonus + ' points' : (selected === -1 ? 'Temps écoulé !' : 'Pas tout à fait.')}</b>${item.explain} — ${item.ref}` + streakFlagHTML(streakInfo);
+  app.querySelector('#next-btn').classList.add('show');
+}
+
+/* ---- VRAI/FAUX ---- */
+function renderVF(body){
+  const item = gameState.items[gameState.index];
+  gameState.maxPoints += 10;
+  body.innerHTML = `
+    ${timerHTML()}
+    <div class="bc-q-card">
+      <div class="bc-q-topic">VRAI OU FAUX</div>
+      <div class="bc-q-text">${item.q}</div>
+      <div class="bc-vf-row">
+        <button class="bc-vf-btn" id="vf-true">✅ Vrai</button>
+        <button class="bc-vf-btn" id="vf-false">❌ Faux</button>
+      </div>
+      <div class="bc-feedback" id="feedback"></div>
+      ${nextControls()}
+    </div>
+  `;
+  app.querySelector('#vf-true').addEventListener('click', () => answerVF(true));
+  app.querySelector('#vf-false').addEventListener('click', () => answerVF(false));
+  wireNext();
+  startTimer(() => answerVF(null));
+}
+function answerVF(selected){
+  if (gameState.answered) return;
+  gameState.answered = true;
+  clearInterval(gameState.timer);
+  const item = gameState.items[gameState.index];
+  const trueBtn = app.querySelector('#vf-true');
+  const falseBtn = app.querySelector('#vf-false');
+  const correctBtn = item.correct ? trueBtn : falseBtn;
+  const otherBtn = item.correct ? falseBtn : trueBtn;
+  correctBtn.classList.add('correct');
+  if (selected !== null && selected !== item.correct) otherBtn.classList.add('wrong'); else otherBtn.classList.add('dim');
+  trueBtn.disabled = true; falseBtn.disabled = true;
+  const ok = selected === item.correct;
+  const bonus = ok ? (gameState.timeLeft >= 10 ? 10 : gameState.timeLeft >= 5 ? 8 : 6) : 0;
+  const streakInfo = registerStreak(ok);
+  gameState.points += bonus + streakInfo.bonus;
+  if (ok) gameState.correctCount++; else gameState.wrongCount++;
+  const fb = app.querySelector('#feedback');
+  fb.className = 'bc-feedback show ' + (ok ? 'ok' : 'ko');
+  fb.innerHTML = `<b>${ok ? 'Exact ! +' + bonus + ' points' : (selected === null ? 'Temps écoulé !' : 'Pas tout à fait.')}</b>${item.explain} — ${item.ref}` + streakFlagHTML(streakInfo);
+  app.querySelector('#next-btn').classList.add('show');
+}
+
+/* ---- DEVINETTE / CHARADE (progressive clues + real multiple-choice answer) ---- */
+function renderDevinette(body){
+  const item = gameState.items[gameState.index];
+  gameState.maxPoints += 3;
+  gameState.devinette = { cluesShown: 1, choicesRevealed: false };
+  paintDevinette(body, item);
+}
+function paintDevinette(body, item){
+  const shown = gameState.devinette.cluesShown;
+  const choicesRevealed = gameState.devinette.choicesRevealed;
+  const revealed = gameState.answered;
+  const suffix = gameState.modeKey === 'charade' ? '· CHARADE' : gameState.modeKey === 'memoire' ? '· À COMPLÉTER' : '· QUI SUIS-JE ?';
+  const clueLabel = gameState.modeKey === 'charade' ? 'Partie' : gameState.modeKey === 'memoire' ? 'Verset' : 'Indice';
+  const letters = ['A','B','C','D'];
+  body.innerHTML = `
+    <div class="bc-q-card">
+      <div class="bc-q-topic">${item.topic.toUpperCase()} ${suffix}</div>
+      <div class="bc-clue-list">
+        ${item.clues.slice(0, shown).map((c,i) => `<div class="bc-clue"><b>${clueLabel} ${i+1}</b><span>${c}</span></div>`).join('')}
+      </div>
+      ${!choicesRevealed && shown < item.clues.length ? `<button class="bc-reveal-btn" id="more-clue">Voir l'indice suivant (vaut moins de points)</button>` : ''}
+      ${!choicesRevealed ? `<button class="bc-reveal-btn" id="reveal-answer" style="margin-top:8px">Je réponds — voir les choix</button>` : ''}
+      ${choicesRevealed ? `
+        ${timerHTML()}
+        <div class="bc-answers" id="answers" style="margin-top:14px">
+          ${item.options.map((o,i) => `<button class="bc-answer-btn" data-i="${i}"><span class="bc-answer-letter">${letters[i]}</span><span>${o}</span></button>`).join('')}
+        </div>
+        <div class="bc-feedback" id="feedback"></div>
+      ` : ''}
+      ${nextControls()}
+    </div>
+  `;
+  if (!choicesRevealed) {
+    const moreBtn = app.querySelector('#more-clue');
+    if (moreBtn) moreBtn.addEventListener('click', () => { gameState.devinette.cluesShown++; paintDevinette(body, item); });
+    app.querySelector('#reveal-answer').addEventListener('click', () => { gameState.devinette.choicesRevealed = true; paintDevinette(body, item); });
+  } else {
+    body.querySelectorAll('.bc-answer-btn').forEach(btn => btn.addEventListener('click', () => answerDevinette(parseInt(btn.dataset.i), item)));
+    startTimer(() => answerDevinette(-1, item));
+  }
+  wireNext();
+}
+function answerDevinette(selected, item){
+  if (gameState.answered) return;
+  gameState.answered = true;
+  clearInterval(gameState.timer);
+  const shown = gameState.devinette.cluesShown;
+  const buttons = app.querySelectorAll('.bc-answer-btn');
+  buttons.forEach(b => {
+    const i = parseInt(b.dataset.i);
+    b.disabled = true;
+    if (i === item.correct) b.classList.add('correct');
+    else if (i === selected) b.classList.add('wrong');
+    else b.classList.add('dim');
+  });
+  const ok = selected === item.correct;
+  const pts = ok ? (shown === 1 ? 3 : shown === 2 ? 2 : 1) : 0;
+  const streakInfo = registerStreak(ok);
+  gameState.points += pts + streakInfo.bonus;
+  if (ok) gameState.correctCount++; else gameState.wrongCount++;
+  const fb = app.querySelector('#feedback');
+  fb.className = 'bc-feedback show ' + (ok ? 'ok' : 'ko');
+  fb.innerHTML = `<b>${ok ? 'Trouvé ! +' + pts + ' points' : (selected === -1 ? 'Temps écoulé !' : 'Pas tout à fait.')}</b>${item.explain}` + streakFlagHTML(streakInfo);
+  app.querySelector('#next-btn').classList.add('show');
+}
+
+/* ---- MOTS MÊLÉS (interactive word search) ---- */
+const DIRECTIONS = [[0,1],[0,-1],[1,0],[-1,0],[1,1],[1,-1],[-1,1],[-1,-1]];
+function stripAccents(s){
+  return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toUpperCase();
+}
+function generateWordGrid(words){
+  const clean = words.map(stripAccents);
+  const longest = Math.max(...clean.map(w => w.length));
+  const size = Math.min(14, Math.max(11, longest + 1));
+  const grid = Array.from({length: size}, () => Array(size).fill(null));
+  const placements = [];
+  const sorted = [...clean].sort((a,b) => b.length - a.length);
+  for (const word of sorted) {
+    let placed = false;
+    for (let attempt = 0; attempt < 300 && !placed; attempt++) {
+      const dir = DIRECTIONS[Math.floor(Math.random()*DIRECTIONS.length)];
+      const maxR = dir[0] === 1 ? size - word.length : dir[0] === -1 ? word.length - 1 : size - 1;
+      const minR = dir[0] === 1 ? 0 : dir[0] === -1 ? word.length - 1 : 0;
+      const maxC = dir[1] === 1 ? size - word.length : dir[1] === -1 ? word.length - 1 : size - 1;
+      const minC = dir[1] === 1 ? 0 : dir[1] === -1 ? word.length - 1 : 0;
+      if (maxR < minR || maxC < minC) continue;
+      const r = minR + Math.floor(Math.random() * (maxR - minR + 1));
+      const c = minC + Math.floor(Math.random() * (maxC - minC + 1));
+      let fits = true;
+      const cells = [];
+      for (let i = 0; i < word.length; i++) {
+        const rr = r + dir[0]*i, cc = c + dir[1]*i;
+        const existing = grid[rr][cc];
+        if (existing !== null && existing !== word[i]) { fits = false; break; }
+        cells.push([rr,cc]);
+      }
+      if (fits) {
+        cells.forEach(([rr,cc], i) => { grid[rr][cc] = word[i]; });
+        placements.push({ word, cells });
+        placed = true;
+      }
+    }
+  }
+  const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+  for (let r = 0; r < size; r++) for (let c = 0; c < size; c++) {
+    if (grid[r][c] === null) grid[r][c] = alphabet[Math.floor(Math.random()*alphabet.length)];
+  }
+  return { grid, size, placements };
+}
+
+function renderMotsMeles(body){
+  const item = gameState.items[gameState.index];
+  const { grid, size, placements } = generateWordGrid(item.words);
+  gameState.maxPoints += item.words.length * 10;
+  gameState.mots = { placements, found: new Set(), selStart: null, size, grid, secondsLeft: 90 };
+
+  const cellPct = (100 / size).toFixed(4);
+  body.innerHTML = `
+    <div class="bc-q-card" style="background:var(--parchment);color:var(--ink);border:1px solid #e6e3d8;box-shadow:none">
+      <div class="bc-q-topic" style="color:var(--navy)">${item.topic.toUpperCase()}</div>
+      <div class="bc-mots-timer-row">
+        <div class="bc-mots-timer" id="mots-timer">1:30</div>
+        <div class="bc-mots-found" id="mots-found-count">0 / ${item.words.length} mots trouvés</div>
+      </div>
+      <div class="bc-mots-grid" id="mots-grid" style="grid-template-columns: repeat(${size}, 1fr); aspect-ratio: 1/1;"></div>
+      <div class="bc-mots-wordlist" id="mots-wordlist">
+        ${item.words.map(w => `<span class="bc-mots-word" data-word="${stripAccents(w)}">${w}</span>`).join('')}
+      </div>
+      <div class="bc-feedback" id="feedback"></div>
+      ${nextControls()}
+    </div>
+  `;
+
+  const gridEl = app.querySelector('#mots-grid');
+  for (let r = 0; r < size; r++) {
+    for (let c = 0; c < size; c++) {
+      const cell = document.createElement('div');
+      cell.className = 'bc-mots-cell';
+      cell.textContent = grid[r][c];
+      cell.dataset.r = r; cell.dataset.c = c;
+      cell.addEventListener('click', () => handleMotsCellClick(r, c, item));
+      gridEl.appendChild(cell);
+    }
+  }
+  wireNext();
+  startMotsTimer(item);
+}
+
+function startMotsTimer(item){
+  clearInterval(gameState.timer);
+  const el = app.querySelector('#mots-timer');
+  function paint(){
+    const s = gameState.mots.secondsLeft;
+    const m = Math.floor(s/60), sec = s%60;
+    el.textContent = m + ':' + String(sec).padStart(2,'0');
+    if (s <= 15) el.classList.add('low'); else el.classList.remove('low');
+  }
+  paint();
+  gameState.timer = setInterval(() => {
+    gameState.mots.secondsLeft--;
+    paint();
+    if (gameState.mots.secondsLeft <= 0) { clearInterval(gameState.timer); finishMotsRound(item); }
+  }, 1000);
+}
+
+function cellsAligned(r1,c1,r2,c2){
+  if (r1 === r2) return [0, c2 > c1 ? 1 : -1];
+  if (c1 === c2) return [r2 > r1 ? 1 : -1, 0];
+  if (Math.abs(r2-r1) === Math.abs(c2-c1)) return [r2 > r1 ? 1 : -1, c2 > c1 ? 1 : -1];
+  return null;
+}
+
+function handleMotsCellClick(r, c, item){
+  if (gameState.answered) return;
+  const mots = gameState.mots;
+  const gridEl = app.querySelector('#mots-grid');
+  const cellAt = (rr,cc) => gridEl.children[rr*mots.size+cc];
+
+  if (!mots.selStart) {
+    mots.selStart = [r,c];
+    cellAt(r,c).classList.add('selecting');
+    return;
+  }
+  const [r1,c1] = mots.selStart;
+  if (r1 === r && c1 === c) { cellAt(r,c).classList.remove('selecting'); mots.selStart = null; return; }
+
+  const dir = cellsAligned(r1,c1,r,c);
+  cellAt(r1,c1).classList.remove('selecting');
+  mots.selStart = null;
+  if (!dir) return;
+
+  const cells = [];
+  let rr = r1, cc = c1;
+  while (true) {
+    cells.push([rr,cc]);
+    if (rr === r && cc === c) break;
+    rr += dir[0]; cc += dir[1];
+    if (cells.length > mots.size) return; // safety
+  }
+  const str = cells.map(([a,b]) => mots.grid[a][b]).join('');
+  const strRev = str.split('').reverse().join('');
+
+  const match = mots.placements.find(p => !mots.found.has(p.word) && (p.word === str || p.word === strRev));
+  if (match) {
+    mots.found.add(match.word);
+    match.cells.forEach(([a,b]) => cellAt(a,b).classList.add('found'));
+    const wordEl = app.querySelector(`.bc-mots-word[data-word="${match.word}"]`);
+    if (wordEl) wordEl.classList.add('found');
+    app.querySelector('#mots-found-count').textContent = `${mots.found.size} / ${item.words.length} mots trouvés`;
+    if (mots.found.size === item.words.length) { clearInterval(gameState.timer); finishMotsRound(item); }
+  } else {
+    cells.forEach(([a,b]) => {
+      const el = cellAt(a,b);
+      el.classList.add('miss');
+      setTimeout(() => el.classList.remove('miss'), 350);
+    });
+  }
+}
+
+function finishMotsRound(item){
+  if (gameState.answered) return;
+  gameState.answered = true;
+  const mots = gameState.mots;
+  const foundCount = mots.found.size;
+  const total = item.words.length;
+  const pts = foundCount * 10;
+  const ok = foundCount === total;
+  const streakInfo = registerStreak(ok);
+  gameState.points += pts + streakInfo.bonus;
+  if (ok) gameState.correctCount++; else gameState.wrongCount++;
+  const fb = app.querySelector('#feedback');
+  fb.className = 'bc-feedback show ' + (ok ? 'ok' : 'ko');
+  fb.innerHTML = `<b>${ok ? 'Grille complétée ! +' + pts + ' points' : foundCount + '/' + total + ' mots trouvés — +' + pts + ' points'}</b>` +
+    (ok ? 'Bravo, tu as trouvé tous les mots !' : 'Pas grave, tu peux continuer sur la prochaine grille.') + streakFlagHTML(streakInfo);
+  app.querySelector('#next-btn').classList.add('show');
+}
+
+/* ---- VERSETS À COMPLÉTER (book's own "double défi" scoring: 2 pts + 3 pts bonus) ---- */
+function renderVersets(body){
+  const item = gameState.items[gameState.index];
+  gameState.maxPoints += 5;
+  gameState.answered = false;
+  paintVersets(body, item, false);
+}
+function paintVersets(body, item, revealed){
+  body.innerHTML = `
+    <div class="bc-q-card">
+      <div class="bc-q-topic">${item.topic.toUpperCase()} · VERSET À COMPLÉTER</div>
+      <div class="bc-verset-clue">${item.clues[0]}</div>
+      ${!revealed ? `<button class="bc-reveal-btn" id="reveal-verset" style="margin-top:14px">Voir la suite du verset</button>` : `
+        <div class="bc-answer-reveal">
+          <b>« … ${item.answer} »</b>
+          <p>${item.explain}</p>
+        </div>
+        <div class="bc-verset-label">Ton défi, honnêtement :</div>
+        <div class="bc-verset-score-col">
+          <button class="bc-verset-btn full" id="v-full">✅ J'ai complété ET expliqué le sens <span>5 pts</span></button>
+          <button class="bc-verset-btn partial" id="v-partial">🟡 J'ai seulement complété le verset <span>2 pts</span></button>
+          <button class="bc-verset-btn none" id="v-none">❌ Je n'ai pas trouvé <span>0 pt</span></button>
+        </div>
+      `}
+      ${nextControls()}
+    </div>
+  `;
+  if (!revealed) {
+    app.querySelector('#reveal-verset').addEventListener('click', () => paintVersets(body, item, true));
+  } else {
+    app.querySelector('#v-full').addEventListener('click', () => scoreVerset(5, item));
+    app.querySelector('#v-partial').addEventListener('click', () => scoreVerset(2, item));
+    app.querySelector('#v-none').addEventListener('click', () => scoreVerset(0, item));
+  }
+  wireNext();
+}
+function scoreVerset(pts, item){
+  if (gameState.answered) return;
+  gameState.answered = true;
+  const ok = pts >= 2;
+  const streakInfo = registerStreak(ok);
+  gameState.points += pts + streakInfo.bonus;
+  if (ok) gameState.correctCount++; else gameState.wrongCount++;
+  ['v-full','v-partial','v-none'].forEach(id => { const b = app.querySelector('#'+id); if (b) b.disabled = true; });
+  const feedback = document.createElement('div');
+  feedback.className = 'bc-feedback show ok';
+  feedback.innerHTML = `<b>+${pts} points</b>${streakFlagHTML(streakInfo) || 'Défi suivant !'}`;
+  app.querySelector('.bc-verset-score-col').after(feedback);
+  app.querySelector('#next-btn').classList.add('show');
+}
+
+/* ---- DÎNER BIBLIQUE / RÉFLEXION (no right/wrong answer, pure discussion cards) ---- */
+function renderReflexion(body){
+  const item = gameState.items[gameState.index];
+  gameState.maxPoints += 10;
+  gameState.answered = false;
+  body.innerHTML = `
+    <div class="bc-q-card" style="background:var(--navy)">
+      <div class="bc-q-topic">${item.topic.toUpperCase()}</div>
+      <div class="bc-q-text">${item.question}</div>
+      <div class="bc-reflexion-hint">💬 Partagez votre réponse à voix haute en famille. Pas de bonne ou mauvaise réponse !</div>
+    </div>
+    <button class="bc-next-btn show" id="next-btn">On a partagé, carte suivante →</button>
+  `;
+  app.querySelector('#next-btn').addEventListener('click', () => {
+    gameState.answered = true;
+    gameState.points += 10;
+    gameState.correctCount++;
+    gameState.index++;
+    if (gameState.index >= gameState.items.length) { app.querySelector('#progress-fill').style.width = '100%'; finishGame(); }
+    else loadItem();
+  });
+}
+
+/* ================= RESULTS ================= */
+let lastResultEntry = null;
+
+async function finishGame(){
+  const pct = gameState.maxPoints > 0 ? Math.round((gameState.points / gameState.maxPoints) * 100) : 0;
+
+  profile.completed = (profile.completed || 0) + 1;
+  if (pct >= 100) profile.perfects = (profile.perfects || 0) + 1;
+  profile.categoriesPlayed = profile.categoriesPlayed || {};
+  profile.categoriesPlayed[gameState.catId] = (profile.categoriesPlayed[gameState.catId] || 0) + 1;
+  profile.modesPlayed = Array.from(new Set([...(profile.modesPlayed || []), gameState.modeKey]));
+  profile.totalScorePercent = (profile.totalScorePercent || 0) + pct;
+  profile.avgScore = Math.round(profile.totalScorePercent / profile.completed);
+  profile.maxStreak = Math.max(profile.maxStreak || 0, gameState.maxStreakThisGame);
+
+  const beforeBadges = new Set(profile.unlockedBadges || []);
+  const nowUnlocked = BADGES.filter(b => b.check(profile)).map(b => b.id);
+  const newlyUnlocked = nowUnlocked.filter(id => !beforeBadges.has(id));
+  profile.unlockedBadges = nowUnlocked;
+
+  await saveProfile();
+  refreshHomeStats();
+
+  app.querySelector('#res-score').innerHTML = pct + '<span style="font-size:20px;opacity:.6">%</span>';
+  const level = pct >= 90 ? '🏆 Expert biblique' : pct >= 75 ? '⭐ Maître biblique' : pct >= 60 ? '🔥 Connaisseur' : pct >= 40 ? '📖 Explorateur' : '🌱 Débutant';
+  app.querySelector('#res-level').textContent = level;
+  app.querySelector('#res-correct').textContent = gameState.correctCount;
+  app.querySelector('#res-wrong').textContent = gameState.wrongCount;
+  app.querySelector('#res-points').textContent = gameState.points;
+
+  const badgeBox = app.querySelector('#badge-unlock');
+  if (newlyUnlocked.length) {
+    const names = newlyUnlocked.map(id => BADGES.find(b => b.id === id));
+    badgeBox.style.display = 'block';
+    badgeBox.innerHTML = 'Nouveau badge débloqué : ' + names.map(b => b.emoji + ' ' + b.name).join(', ');
+  } else {
+    badgeBox.style.display = 'none';
+  }
+
+  const catName = CATEGORIES.find(c => c.id === gameState.catId).name;
+  lastResultEntry = { pct, points: gameState.points, category: catName, mode: MODE_META[gameState.modeKey].title, level, date: new Date().toISOString() };
+
+  const publishBtn = app.querySelector('#publish-btn');
+  publishBtn.disabled = false;
+  publishBtn.textContent = '🏆 Publier mon score au classement';
+  publishBtn.onclick = publishScore;
+
+  app.querySelector('#share-btn').onclick = () => {
+    const msg = `🎉 J'AI RELEVÉ LE BIBLE CHALLENGE !\n\n📖 Catégorie : ${catName} (${MODE_META[gameState.modeKey].title})\n🏆 Score : ${pct}%\n${level}\n\nPeux-tu faire mieux que moi ? 📲`;
+    window.open('https://wa.me/?text=' + encodeURIComponent(msg), '_blank');
+  };
+  app.querySelector('#replay-btn').onclick = () => startGame(gameState.catId, gameState.modeKey);
+
+  nav('scr-results');
+}
+
+/* ================= LEADERBOARD (shared inside Claude, local once hosted) ================= */
+async function publishScore(){
+  const input = app.querySelector('#pseudo-input');
+  const name = (input.value || '').trim();
+  if (!name) { input.focus(); input.style.borderColor = 'var(--red)'; return; }
+  const publishBtn = app.querySelector('#publish-btn');
+  publishBtn.disabled = true;
+  publishBtn.textContent = 'Publication...';
+  await storageSet('bc_playername', name, false);
+  app.querySelector('#profil-pseudo-input').value = name;
+  let arr = [];
+  const res = await storageGet('leaderboard_top', true);
+  if (res && res.value) { try { arr = JSON.parse(res.value); } catch(e){} }
+  arr.push({ name, ...lastResultEntry });
+  arr.sort((a,b) => b.points - a.points);
+  arr = arr.slice(0, 20);
+  const saved = await storageSet('leaderboard_top', JSON.stringify(arr), true);
+  if (saved) {
+    publishBtn.textContent = '✅ Score publié !';
+  } else {
+    publishBtn.textContent = 'Échec — réessaie';
+    publishBtn.disabled = false;
+  }
+}
+
+async function loadLeaderboard(){
+  const list = app.querySelector('#lb-list');
+  const note = app.querySelector('#lb-note-text');
+  if (note) note.textContent = hasClaudeStorage
+    ? 'Classement partagé entre tous les joueurs qui testent ce lien depuis Claude. Les pseudos publiés sont visibles de tous.'
+    : 'Classement local à cet appareil et ce navigateur (les scores publiés depuis un autre téléphone/ordinateur n\'apparaissent pas ici — un vrai classement commun à tous les visiteurs demande un petit serveur partagé).';
+  list.innerHTML = '<div class="bc-lb-empty">Chargement…</div>';
+  let arr = [];
+  const res = await storageGet('leaderboard_top', true);
+  if (res && res.value) { try { arr = JSON.parse(res.value); } catch(e){} }
+  if (!arr.length) {
+    list.innerHTML = '<div class="bc-lb-empty">Personne n\'a encore publié de score.<br>Sois le premier ! 🏆</div>';
+    return;
+  }
+  const rankClass = i => i === 0 ? 'gold' : i === 1 ? 'silver' : i === 2 ? 'bronze' : '';
+  const medal = i => i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : (i+1);
+  list.innerHTML = arr.map((e, i) => `
+    <div class="bc-lb-row">
+      <div class="bc-lb-rank ${rankClass(i)}">${medal(i)}</div>
+      <div>
+        <div class="bc-lb-name">${escapeHTML(e.name)}</div>
+        <div class="bc-lb-meta">${escapeHTML(e.category || '')} · ${escapeHTML(e.mode || '')} · ${e.pct}%</div>
+      </div>
+      <div class="bc-lb-pts">${e.points} pts</div>
+    </div>
+  `).join('');
+}
+function escapeHTML(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ================= BADGES SCREEN ================= */
+function renderBadges(){
+  const grid = app.querySelector('#badge-grid');
+  grid.innerHTML = '';
+  BADGES.forEach(b => {
+    const unlocked = b.check(profile);
+    const card = document.createElement('div');
+    card.className = 'bc-badge-card' + (unlocked ? '' : ' locked');
+    card.innerHTML = `<div class="bc-badge-emoji">${b.emoji}</div><div class="bc-badge-name">${b.name}</div><div class="bc-badge-desc">${b.desc}</div>`;
+    grid.appendChild(card);
+  });
+}
+
+/* ================= INIT ================= */
+renderCategories();
+loadProfile();
+
+})();
+</script>
+</body>
+</html>
