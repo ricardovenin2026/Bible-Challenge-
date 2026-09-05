@@ -7,6 +7,9 @@
 
 <!-- Favicon -->
 <link rel="icon" type="image/png" href="https://ricardovenin2026.github.io/Bible-Challenge-/favicon.png">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="theme-color" content="#16224f">
 
 <!-- Aperçu de lien (WhatsApp, Facebook, iMessage...) -->
 <meta property="og:type" content="website">
@@ -79,6 +82,11 @@
     background: var(--gold); opacity: 0.13;
   }
   .bc-eyebrow { font-size: 11px; font-weight: 800; color: var(--gold); letter-spacing: 0.03em; }
+  .bc-sound-toggle {
+    position: absolute; top: 18px; right: 18px; z-index: 2;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); border-radius: 10px;
+    width: 34px; height: 34px; font-size: 15px; cursor: pointer;
+  }
   .bc-h1 { font-family: 'Fraunces', serif; font-weight: 900; font-size: 30px; margin: 4px 0 0; line-height: 1; }
   .bc-h1 em { color: var(--gold); font-style: italic; font-weight: 600; }
 
@@ -201,6 +209,24 @@
     display: inline-block; margin-top: 9px;
     font-size: 9.5px; font-weight: 800; padding: 3px 9px; border-radius: 999px; color: #fff;
   }
+  .bc-cat-card.locked { opacity: 0.72; position: relative; }
+  .bc-cat-lock {
+    margin-top: 8px; font-size: 10px; font-weight: 800; color: var(--gold);
+    background: rgba(212,175,55,0.12); border: 1px solid rgba(212,175,55,0.35); border-radius: 999px;
+    padding: 3px 9px; display: inline-block;
+  }
+
+  /* ============ PAYWALL ============ */
+  #bc-paywall-body {
+    flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 40px 26px 30px; background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%); color: #fff;
+  }
+  .bc-paywall-emoji { font-size: 40px; }
+  .bc-paywall-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 22px; margin-top: 10px; }
+  .bc-paywall-cat { margin-top: 8px; font-weight: 700; font-size: 14px; color: var(--gold); }
+  .bc-paywall-text { margin-top: 16px; font-size: 13px; line-height: 1.6; color: rgba(255,255,255,0.8); }
+  .bc-paywall-divider { margin: 18px 0 10px; font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 700; }
+  .bc-paywall-error { margin-top: 8px; font-size: 12px; color: #ff9b9b; font-weight: 700; }
 
   /* ============ CATEGORY / MODE PICKER ============ */
   #bc-cat-body { padding: 18px; flex: 1; overflow-y: auto; }
@@ -475,6 +501,7 @@
   <!-- ============ HOME ============ -->
   <div class="bc-screen active" id="scr-home">
     <div class="bc-topbar">
+      <button class="bc-sound-toggle" id="sound-toggle-btn">🔊</button>
       <div class="bc-eyebrow">UNE ÉDITION TRUTHPATH ÉDITIONS</div>
       <h1 class="bc-h1">BIBLE <em>Challenge</em></h1>
       <div class="bc-profile-strip">
@@ -545,12 +572,28 @@
         <div class="bc-product-desc">Plus de 90 jeux bibliques prêts à l'emploi — quiz, vrai/faux, mots mêlés, devinettes, charades — pour enfants, jeunes, groupes et familles. La source de tout le contenu de Bible Challenge.</div>
         <a class="bc-product-btn" id="boutique-book-link" href="#" target="_blank" rel="noopener">Voir sur la boutique Chariow →</a>
       </div>
-      <div class="bc-product-card soon">
+      <div class="bc-product-card" id="premium-product-card">
         <div class="bc-product-emoji">💎</div>
         <div class="bc-product-title">Bible Challenge Premium</div>
-        <div class="bc-product-desc">Plus de catégories, plus de niveaux, packs de questions supplémentaires. Bientôt disponible.</div>
-        <div class="bc-product-soon-tag">Bientôt disponible</div>
+        <div class="bc-product-desc">Débloque la catégorie <b>Bible Expert</b> : Mémoire Biblique, Versets à Compléter, Quiz Théologique et bien plus.</div>
+        <button class="bc-product-btn" id="premium-unlock-cta" style="border:none;cursor:pointer">🔓 J'ai un code d'accès</button>
       </div>
+    </div>
+  </div>
+
+  <!-- ============ PAYWALL ============ -->
+  <div class="bc-screen" id="scr-paywall">
+    <div id="bc-paywall-body">
+      <div class="bc-paywall-emoji">🔒</div>
+      <div class="bc-paywall-title">Contenu Premium</div>
+      <div class="bc-paywall-cat" id="paywall-cat-name">🏆 Bible Expert</div>
+      <p class="bc-paywall-text">Cette catégorie fait partie du contenu Premium de TruthPath Éditions. Achète l'accès sur notre boutique Chariow pour recevoir ton code, ou entre-le ci-dessous si tu l'as déjà.</p>
+      <a class="bc-product-btn" id="paywall-boutique-link" href="#" target="_blank" rel="noopener" style="margin-top:6px">🛍️ Obtenir un code sur Chariow</a>
+      <div class="bc-paywall-divider">— ou —</div>
+      <input id="paywall-code-input" type="text" placeholder="Entre ton code d'accès" class="bc-profil-input" style="text-align:center;text-transform:uppercase">
+      <div class="bc-paywall-error" id="paywall-error" style="display:none">Code invalide, réessaie.</div>
+      <button class="bc-instr-start-btn" id="paywall-unlock-btn" style="position:static;margin-top:14px">Débloquer</button>
+      <button class="bc-back-btn bc-instr-back" data-nav="scr-home">← Retour à l'accueil</button>
     </div>
   </div>
 
@@ -671,6 +714,62 @@
 <script>
 (function(){
 
+/* ================= SOUND ENGINE (synthesized, no audio files needed) ================= */
+let audioCtx = null;
+let soundEnabled = true;
+function getAudioCtx(){
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch(e) { return null; }
+  }
+  if (audioCtx.state === 'suspended') audioCtx.resume();
+  return audioCtx;
+}
+function tone(ctx, freq, startTime, duration, type, gainPeak){
+  const osc = ctx.createOscillator();
+  const gain = ctx.createGain();
+  osc.type = type || 'sine';
+  osc.frequency.setValueAtTime(freq, startTime);
+  gain.gain.setValueAtTime(0, startTime);
+  gain.gain.linearRampToValueAtTime(gainPeak || 0.18, startTime + 0.015);
+  gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+  osc.connect(gain).connect(ctx.destination);
+  osc.start(startTime);
+  osc.stop(startTime + duration + 0.02);
+}
+function playSuccessSound(){
+  if (!soundEnabled) return;
+  const ctx = getAudioCtx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  tone(ctx, 523.25, t, 0.14, 'triangle', 0.16);
+  tone(ctx, 659.25, t + 0.08, 0.14, 'triangle', 0.16);
+  tone(ctx, 783.99, t + 0.16, 0.22, 'triangle', 0.18);
+}
+function playErrorSound(){
+  if (!soundEnabled) return;
+  const ctx = getAudioCtx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  tone(ctx, 220, t, 0.22, 'sawtooth', 0.12);
+  tone(ctx, 174.6, t + 0.13, 0.28, 'sawtooth', 0.12);
+}
+function playWordFoundSound(){
+  if (!soundEnabled) return;
+  const ctx = getAudioCtx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  tone(ctx, 880, t, 0.1, 'sine', 0.14);
+  tone(ctx, 1174.66, t + 0.06, 0.14, 'sine', 0.14);
+}
+function playTapSound(){
+  if (!soundEnabled) return;
+  const ctx = getAudioCtx(); if (!ctx) return;
+  tone(ctx, 340, ctx.currentTime, 0.05, 'sine', 0.06);
+}
+function playPerfectSound(){
+  if (!soundEnabled) return;
+  const ctx = getAudioCtx(); if (!ctx) return;
+  const t = ctx.currentTime;
+  [523.25, 659.25, 783.99, 1046.5].forEach((f,i) => tone(ctx, f, t + i*0.09, 0.24, 'triangle', 0.17));
+}
+
 /* ================= DATA ================= */
 const CATEGORIES = [
   { id: 'enfants', name: 'Enfants', ageLabel: '6–12 ans', icon: '🧒', color: '#c9932a', diff: 'Facile' },
@@ -721,6 +820,8 @@ const BOOK_STRUCTURE = {
         instructions: "Chaque personnage est décrit uniquement par ses actions. Retrouvez son nom. Ce jeu développe la connaissance profonde des Écritures." },
       vf: { name: 'Vrai ou Faux — Révision', jeuRange: 'Jeu 18 (Section 2)', bonus: true,
         instructions: "Contenu bonus : ces affirmations viennent en réalité de la Partie B de la Section 2 (Enfants), réutilisées ici pour varier les révisions des jeunes." },
+      motsmeles: { name: 'Mots Mêlés — Défi Rapide', jeuRange: null, bonus: true,
+        instructions: "Contenu bonus, grilles inédites sur le thème des épîtres et conversions bibliques. ⏱️ Version corsée : 10 secondes pour trouver chaque mot, sinon la grille s'arrête !" },
     },
   },
   groupes: {
@@ -732,6 +833,8 @@ const BOOK_STRUCTURE = {
         instructions: "Un personnage est décrit par indices, assemblés depuis plusieurs parties du livre (Sections 3 et 4). L'équipe qui trouve en premier remporte le point." },
       reflexion: { partie: 'C', name: 'Le Dîner Biblique', jeuRange: 'Jeu 64', bonus: false,
         instructions: "Lors d'un repas, chaque membre tire une carte-question. À tour de rôle, chacun répond librement. Pas de pression ! Si on ne sait pas, on cherche ensemble dans la Bible." },
+      motsmeles: { name: 'Mots Mêlés — Défi Rapide', jeuRange: null, bonus: true,
+        instructions: "Contenu bonus, grilles inédites sur les fêtes bibliques et qualités chrétiennes. ⏱️ Version corsée : 10 secondes pour trouver chaque mot, sinon la grille s'arrête !" },
     },
   },
   expert: {
@@ -747,6 +850,8 @@ const BOOK_STRUCTURE = {
         instructions: "Contenu bonus : ces devinettes viennent en réalité de la Section 3 (Jeunes — Devinettes et Qui suis-je), réutilisées ici en version avancée pour les mordus." },
       vf: { name: 'Sagesse Biblique — Révision', jeuRange: null, bonus: true,
         instructions: "Contenu bonus : ces affirmations viennent en réalité de la Partie B de la Section 2 (Enfants), réutilisées ici en révision avancée." },
+      motsmeles: { name: 'Mots Mêlés — Défi Rapide', jeuRange: null, bonus: true,
+        instructions: "Contenu bonus, grilles inédites sur les grandes doctrines et attributs de Dieu. ⏱️ Version corsée : 10 secondes pour trouver chaque mot, sinon la grille s'arrête !" },
     },
   },
 };
@@ -992,6 +1097,9 @@ const QUESTIONS = {
       {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Jésus m'a vu sous le figuier avant même que Philippe m'appelle."], "answer": "Nathanaël", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Jonas", "Nathanaël", "Joseph", "Jean-Baptiste"], "correct": 1},
       {"topic": "Qui suis-je ? — Disciples et apôtres", "clues": ["Je vendais de la pourpre à Philippes et fus baptisée avec toute ma maison."], "answer": "Lydie", "explain": "Qui suis-je ? — Disciples et apôtres.", "options": ["Esther", "Rahab", "Naomi", "Lydie"], "correct": 3},
     ],
+    motsmeles: [
+      {"topic": "Épîtres de Paul", "words": ["ROMAINS", "CORINTHIENS", "GALATES", "EPHESIENS", "PHILIPPIENS", "COLOSSIENS", "THESSALONICIENS", "TIMOTHEE", "TITE", "PHILEMON"]},
+      {"topic": "Grandes conversions", "words": ["PAUL", "ZACHEE", "NICODEME", "CORNEILLE", "LYDIE", "GEOLIER", "ETHIOPIEN", "SAMARITAINE"]},    ],
   },
   groupes: {
     qcm: [
@@ -1125,6 +1233,9 @@ const QUESTIONS = {
       {"topic": "Le Dîner Biblique", "question": "Quelle chose dans la création de Dieu t'émerveille le plus ?"},
       {"topic": "Le Dîner Biblique", "question": "Quel est ton souvenir le plus fort d'un moment de culte en famille ?"},
     ],
+    motsmeles: [
+      {"topic": "Fêtes bibliques", "words": ["PAQUE", "PENTECOTE", "TABERNACLES", "SABBAT", "PURIM", "EXPIATION", "TROMPETTES"]},
+      {"topic": "Qualités chrétiennes", "words": ["FOI", "ESPERANCE", "CHARITE", "HUMILITE", "SAGESSE", "PATIENCE", "INTEGRITE", "BONTE", "FIDELITE"]},    ],
   },
   expert: {
     qcm: [
@@ -1241,6 +1352,9 @@ const QUESTIONS = {
       {"q": "Proverbes 3:5 enseigne de se confier en l'Éternel.", "correct": true, "ref": "Proverbes 3:5", "explain": "Exact."},
       {"q": "Job perdit tout mais ne pécha pas contre Dieu.", "correct": true, "ref": "Job 1:22", "explain": "Exact."},
     ],
+    motsmeles: [
+      {"topic": "Grandes doctrines", "words": ["TRINITE", "REDEMPTION", "JUSTIFICATION", "SANCTIFICATION", "ELECTION", "GRACE", "ALLIANCE", "INCARNATION", "RESURRECTION", "ESCHATOLOGIE"]},
+      {"topic": "Attributs de Dieu", "words": ["OMNISCIENT", "OMNIPOTENT", "OMNIPRESENT", "ETERNEL", "IMMUABLE", "SAINT", "SOUVERAIN", "FIDELE"]},    ],
   },
 };
 
@@ -1297,9 +1411,18 @@ async function loadProfile(){
     app.querySelector('#pseudo-input').value = nameRes.value;
     app.querySelector('#profil-pseudo-input').value = nameRes.value;
   }
+  const premiumRes = await storageGet('bc_premium_unlocked', false);
+  if (premiumRes && premiumRes.value === 'true') { premiumUnlocked = true; renderCategories(); }
+  const soundRes = await storageGet('bc_sound_enabled', false);
+  if (soundRes && soundRes.value === 'false') { soundEnabled = false; updateSoundToggleUI(); }
 }
 async function saveProfile(){
   await storageSet('bc_profile', JSON.stringify(profile), false);
+}
+
+function updateSoundToggleUI(){
+  const btn = app.querySelector('#sound-toggle-btn');
+  if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
 }
 
 function refreshHomeStats(){
@@ -1349,12 +1472,42 @@ function renderToc(){
     </div>`;
   }).join('');
   box.querySelectorAll('.bc-toc-partie-row.clickable').forEach(row => {
-    row.addEventListener('click', () => showInstructions(row.dataset.cat, row.dataset.mode));
+    row.addEventListener('click', () => {
+      if (PREMIUM_CATEGORIES.includes(row.dataset.cat) && !premiumUnlocked) showPaywall(row.dataset.cat);
+      else showInstructions(row.dataset.cat, row.dataset.mode);
+    });
   });
 }
 
 // TODO: replace with the real TruthPath Éditions Chariow product link
 app.querySelector('#boutique-book-link').href = 'https://chariow.com/truthpath-editions';
+app.querySelector('#paywall-boutique-link').href = 'https://chariow.com/truthpath-editions';
+
+app.querySelector('#premium-unlock-cta').addEventListener('click', () => showPaywall('expert'));
+
+async function tryUnlockCode(){
+  const input = app.querySelector('#paywall-code-input');
+  const code = (input.value || '').trim().toUpperCase();
+  const errorBox = app.querySelector('#paywall-error');
+  if (VALID_ACCESS_CODES.includes(code)) {
+    premiumUnlocked = true;
+    await storageSet('bc_premium_unlocked', 'true', false);
+    errorBox.style.display = 'none';
+    renderCategories();
+    nav('scr-home');
+  } else {
+    errorBox.style.display = 'block';
+  }
+}
+app.querySelector('#paywall-unlock-btn').addEventListener('click', tryUnlockCode);
+app.querySelector('#paywall-code-input').addEventListener('keydown', (e) => { if (e.key === 'Enter') tryUnlockCode(); });
+
+app.querySelector('#sound-toggle-btn').addEventListener('click', async () => {
+  soundEnabled = !soundEnabled;
+  updateSoundToggleUI();
+  await storageSet('bc_sound_enabled', String(soundEnabled), false);
+  if (soundEnabled) playTapSound();
+});
 
 let pseudoSaveTimer = null;
 app.querySelector('#profil-pseudo-input').addEventListener('input', (e) => {
@@ -1391,22 +1544,36 @@ function renderProfilScreen(){
 }
 
 /* ================= HOME: render categories ================= */
+const PREMIUM_CATEGORIES = ['expert'];
+let premiumUnlocked = false;
+const VALID_ACCESS_CODES = ['TRUTHPATH2026', 'BIBLECHALLENGE']; // TODO: personnalise ces codes, à distribuer après achat sur Chariow
+
 function renderCategories(){
   const grid = app.querySelector('#cat-grid');
   grid.innerHTML = '';
   CATEGORIES.forEach(cat => {
     const nModes = Object.keys(QUESTIONS[cat.id]).length;
+    const locked = PREMIUM_CATEGORIES.includes(cat.id) && !premiumUnlocked;
     const card = document.createElement('div');
-    card.className = 'bc-cat-card';
+    card.className = 'bc-cat-card' + (locked ? ' locked' : '');
     card.innerHTML = `
       <div class="bc-cat-icon" style="background:${cat.color}20;color:${cat.color}">${cat.icon}</div>
       <div class="bc-cat-name">${cat.name}</div>
       <div class="bc-cat-age">${cat.ageLabel} · ${nModes} jeux</div>
       <div class="bc-cat-diff" style="background:${cat.color}">${cat.diff}</div>
+      ${locked ? `<div class="bc-cat-lock">🔒 Premium</div>` : ''}
     `;
-    card.addEventListener('click', () => openCategory(cat.id));
+    card.addEventListener('click', () => locked ? showPaywall(cat.id) : openCategory(cat.id));
     grid.appendChild(card);
   });
+}
+
+function showPaywall(catId){
+  const cat = CATEGORIES.find(c => c.id === catId);
+  app.querySelector('#paywall-cat-name').textContent = cat.icon + ' ' + cat.name;
+  app.querySelector('#paywall-code-input').value = '';
+  app.querySelector('#paywall-error').style.display = 'none';
+  nav('scr-paywall');
 }
 
 /* ================= CATEGORY SCREEN ================= */
@@ -1602,6 +1769,7 @@ function answerQCM(selected){
     else b.classList.add('dim');
   });
   const ok = selected === item.correct;
+  ok ? playSuccessSound() : playErrorSound();
   const bonus = ok ? (gameState.timeLeft >= 10 ? 10 : gameState.timeLeft >= 5 ? 8 : 6) : 0;
   const streakInfo = registerStreak(ok);
   gameState.points += bonus + streakInfo.bonus;
@@ -1648,6 +1816,7 @@ function answerVF(selected){
   if (selected !== null && selected !== item.correct) otherBtn.classList.add('wrong'); else otherBtn.classList.add('dim');
   trueBtn.disabled = true; falseBtn.disabled = true;
   const ok = selected === item.correct;
+  ok ? playSuccessSound() : playErrorSound();
   const bonus = ok ? (gameState.timeLeft >= 10 ? 10 : gameState.timeLeft >= 5 ? 8 : 6) : 0;
   const streakInfo = registerStreak(ok);
   gameState.points += bonus + streakInfo.bonus;
@@ -1714,6 +1883,7 @@ function answerDevinette(selected, item){
     else b.classList.add('dim');
   });
   const ok = selected === item.correct;
+  ok ? playSuccessSound() : playErrorSound();
   const pts = ok ? (shown === 1 ? 3 : shown === 2 ? 2 : 1) : 0;
   const streakInfo = registerStreak(ok);
   gameState.points += pts + streakInfo.bonus;
@@ -1732,11 +1902,12 @@ function stripAccents(s){
 function generateWordGrid(words){
   const clean = words.map(stripAccents);
   const longest = Math.max(...clean.map(w => w.length));
-  const size = Math.min(14, Math.max(11, longest + 1));
+  const size = Math.min(16, Math.max(11, longest));
   const grid = Array.from({length: size}, () => Array(size).fill(null));
   const placements = [];
   const sorted = [...clean].sort((a,b) => b.length - a.length);
   for (const word of sorted) {
+    if (word.length > size) continue; // safety: word cannot possibly fit
     let placed = false;
     for (let attempt = 0; attempt < 300 && !placed; attempt++) {
       const dir = DIRECTIONS[Math.floor(Math.random()*DIRECTIONS.length)];
@@ -1745,6 +1916,7 @@ function generateWordGrid(words){
       const maxC = dir[1] === 1 ? size - word.length : dir[1] === -1 ? word.length - 1 : size - 1;
       const minC = dir[1] === 1 ? 0 : dir[1] === -1 ? word.length - 1 : 0;
       if (maxR < minR || maxC < minC) continue;
+      if (minR < 0 || maxR > size - 1 || minC < 0 || maxC > size - 1) continue;
       const r = minR + Math.floor(Math.random() * (maxR - minR + 1));
       const c = minC + Math.floor(Math.random() * (maxC - minC + 1));
       let fits = true;
@@ -1773,14 +1945,15 @@ function renderMotsMeles(body){
   const item = gameState.items[gameState.index];
   const { grid, size, placements } = generateWordGrid(item.words);
   gameState.maxPoints += item.words.length * 10;
-  gameState.mots = { placements, found: new Set(), selStart: null, size, grid, secondsLeft: 90 };
+  const mode = gameState.catId === 'enfants' ? 'total' : 'perword';
+  gameState.mots = { placements, found: new Set(), selStart: null, size, grid, mode,
+    secondsLeft: mode === 'total' ? 90 : 10 };
 
-  const cellPct = (100 / size).toFixed(4);
   body.innerHTML = `
     <div class="bc-q-card" style="background:var(--parchment);color:var(--ink);border:1px solid #e6e3d8;box-shadow:none">
-      <div class="bc-q-topic" style="color:var(--navy)">${item.topic.toUpperCase()}</div>
+      <div class="bc-q-topic" style="color:var(--navy)">${item.topic.toUpperCase()}${mode === 'perword' ? ' · 10s PAR MOT' : ''}</div>
       <div class="bc-mots-timer-row">
-        <div class="bc-mots-timer" id="mots-timer">1:30</div>
+        <div class="bc-mots-timer" id="mots-timer">${mode === 'total' ? '1:30' : '10'}</div>
         <div class="bc-mots-found" id="mots-found-count">0 / ${item.words.length} mots trouvés</div>
       </div>
       <div class="bc-mots-grid" id="mots-grid" style="grid-template-columns: repeat(${size}, 1fr); aspect-ratio: 1/1;"></div>
@@ -1807,14 +1980,25 @@ function renderMotsMeles(body){
   startMotsTimer(item);
 }
 
+function resetPerWordTimer(item){
+  gameState.mots.secondsLeft = 10;
+  const el = app.querySelector('#mots-timer');
+  if (el) { el.textContent = '10'; el.classList.remove('low'); }
+}
+
 function startMotsTimer(item){
   clearInterval(gameState.timer);
   const el = app.querySelector('#mots-timer');
+  const perWord = gameState.mots.mode === 'perword';
   function paint(){
     const s = gameState.mots.secondsLeft;
-    const m = Math.floor(s/60), sec = s%60;
-    el.textContent = m + ':' + String(sec).padStart(2,'0');
-    if (s <= 15) el.classList.add('low'); else el.classList.remove('low');
+    if (perWord) {
+      el.textContent = String(Math.max(s,0));
+    } else {
+      const m = Math.floor(s/60), sec = s%60;
+      el.textContent = m + ':' + String(sec).padStart(2,'0');
+    }
+    if (s <= (perWord ? 3 : 15)) el.classList.add('low'); else el.classList.remove('low');
   }
   paint();
   gameState.timer = setInterval(() => {
@@ -1863,13 +2047,16 @@ function handleMotsCellClick(r, c, item){
 
   const match = mots.placements.find(p => !mots.found.has(p.word) && (p.word === str || p.word === strRev));
   if (match) {
+    playWordFoundSound();
     mots.found.add(match.word);
     match.cells.forEach(([a,b]) => cellAt(a,b).classList.add('found'));
     const wordEl = app.querySelector(`.bc-mots-word[data-word="${match.word}"]`);
     if (wordEl) wordEl.classList.add('found');
     app.querySelector('#mots-found-count').textContent = `${mots.found.size} / ${item.words.length} mots trouvés`;
-    if (mots.found.size === item.words.length) { clearInterval(gameState.timer); finishMotsRound(item); }
+    if (mots.mode === 'perword') resetPerWordTimer(item);
+    if (mots.found.size === item.words.length) { clearInterval(gameState.timer); if (mots.found.size === item.words.length) playPerfectSound(); finishMotsRound(item); }
   } else {
+    playErrorSound();
     cells.forEach(([a,b]) => {
       const el = cellAt(a,b);
       el.classList.add('miss');
@@ -1936,6 +2123,7 @@ function scoreVerset(pts, item){
   if (gameState.answered) return;
   gameState.answered = true;
   const ok = pts >= 2;
+  ok ? playSuccessSound() : playErrorSound();
   const streakInfo = registerStreak(ok);
   gameState.points += pts + streakInfo.bonus;
   if (ok) gameState.correctCount++; else gameState.wrongCount++;
@@ -2096,6 +2284,12 @@ function renderBadges(){
 /* ================= INIT ================= */
 renderCategories();
 loadProfile();
+
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').catch(() => {});
+  });
+}
 
 })();
 </script>
