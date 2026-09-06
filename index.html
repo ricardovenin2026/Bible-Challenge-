@@ -167,6 +167,37 @@
     width: 100%; margin-top: 10px; background: transparent; border: 1px solid #e0a0a0; color: var(--red);
     border-radius: 12px; padding: 12px; font-weight: 700; font-size: 12.5px; cursor: pointer;
   }
+  .bc-account-box {
+    background: #fff; border: 1px solid #e8e6dc; border-radius: 14px; padding: 16px; text-align: center;
+  }
+  .bc-account-box.connected { background: #eef8f1; border-color: #cdeada; }
+  .bc-account-icon { font-size: 26px; }
+  .bc-account-text { font-size: 12.5px; color: #6a6a78; margin-top: 8px; line-height: 1.5; }
+  .bc-account-btn {
+    margin-top: 12px; width: 100%; background: var(--navy); color: #fff; border: none; border-radius: 999px;
+    padding: 12px; font-weight: 800; font-size: 13px; cursor: pointer;
+  }
+  .bc-account-btn.secondary { background: transparent; border: 1px solid #c2c2ca; color: #6a6a78; }
+
+  /* ============ AUTH SCREEN ============ */
+  #bc-auth-body {
+    flex: 1; display: flex; flex-direction: column; align-items: center; text-align: center;
+    padding: 44px 26px 30px; background: linear-gradient(160deg, var(--navy) 0%, var(--navy-deep) 100%); color: #fff;
+  }
+  .bc-auth-emoji { font-size: 36px; }
+  .bc-auth-title { font-family: 'Fraunces', serif; font-weight: 800; font-size: 24px; margin-top: 10px; }
+  .bc-auth-sub { margin-top: 10px; font-size: 12.5px; color: rgba(255,255,255,0.7); line-height: 1.5; }
+  .bc-google-btn {
+    margin-top: 24px; width: 100%; background: #fff; color: #3c4043; border: none; border-radius: 999px;
+    padding: 13px; font-weight: 700; font-size: 13.5px; cursor: pointer; display: flex; align-items: center;
+    justify-content: center; gap: 10px;
+  }
+  .bc-auth-divider { margin: 16px 0 12px; font-size: 11px; color: rgba(255,255,255,0.4); font-weight: 700; }
+  .bc-auth-error { margin-top: 10px; font-size: 12px; color: #ff9b9b; font-weight: 700; }
+  .bc-auth-switch {
+    margin-top: 14px; background: transparent; border: none; color: var(--gold); font-weight: 700;
+    font-size: 12.5px; cursor: pointer; text-decoration: underline;
+  }
 
   /* ============ BOUTIQUE SCREEN ============ */
   #bc-boutique-body { padding: 18px; flex: 1; overflow-y: auto; }
@@ -494,6 +525,29 @@
   .bc-lb-empty { text-align: center; color: #9a9aa8; font-size: 13px; margin-top: 30px; }
 </style>
 </head>
+
+<!-- Firebase (comptes + base de données partagée) -->
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.13.0/firebase-firestore-compat.js"></script>
+<script>
+  const firebaseConfig = {
+    apiKey: "AIzaSyD3YPg27_cw0cY-Z_bykPFzcj8_g7zqYnU",
+    authDomain: "bible-challenge-1b039.firebaseapp.com",
+    projectId: "bible-challenge-1b039",
+    storageBucket: "bible-challenge-1b039.firebasestorage.app",
+    messagingSenderId: "308581298307",
+    appId: "1:308581298307:web:2c2533beb40d54b2d62bb6",
+    measurementId: "G-9XTQXT3X6T"
+  };
+  window.fbAuth = null;
+  window.fbDb = null;
+  try {
+    firebase.initializeApp(firebaseConfig);
+    window.fbAuth = firebase.auth();
+    window.fbDb = firebase.firestore();
+  } catch(e) { console.warn('Firebase unavailable, continuing in guest-only mode', e); }
+</script>
 <body>
 
 <div class="bc-root" id="app">
@@ -538,7 +592,18 @@
       </div>
     </div>
     <div id="bc-profil-body">
-      <div class="bc-section-label">Ton pseudo</div>
+      <div class="bc-account-box" id="account-box-guest">
+        <div class="bc-account-icon">👤</div>
+        <div class="bc-account-text">Tu joues en tant qu'invité. Crée un compte pour garder ta progression sur tous tes appareils et apparaître dans le vrai classement.</div>
+        <button class="bc-account-btn" id="go-auth-btn">Se connecter / Créer un compte</button>
+      </div>
+      <div class="bc-account-box connected" id="account-box-connected" style="display:none">
+        <div class="bc-account-icon">✅</div>
+        <div class="bc-account-text">Connecté en tant que <b id="account-email">—</b></div>
+        <button class="bc-account-btn secondary" id="logout-btn">Se déconnecter</button>
+      </div>
+
+      <div class="bc-section-label" style="margin-top:18px">Ton pseudo</div>
       <input id="profil-pseudo-input" type="text" maxlength="20" placeholder="Ex : Ricardo" class="bc-profil-input">
 
       <div class="bc-section-label" style="margin-top:20px">Tes statistiques</div>
@@ -554,6 +619,29 @@
 
       <button class="bc-badges-link" id="profil-go-badges">🏅 Voir tous mes badges →</button>
       <button class="bc-reset-btn" id="profil-reset-btn">Réinitialiser ma progression</button>
+    </div>
+  </div>
+
+  <!-- ============ AUTHENTIFICATION ============ -->
+  <div class="bc-screen" id="scr-auth">
+    <div id="bc-auth-body">
+      <div class="bc-auth-emoji">📖</div>
+      <div class="bc-auth-title" id="auth-title">Connexion</div>
+      <p class="bc-auth-sub">Garde ta progression, ton pseudo et ton accès Premium sur tous tes appareils.</p>
+
+      <button class="bc-google-btn" id="google-signin-btn">
+        <svg width="18" height="18" viewBox="0 0 48 48"><path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3c-1.6 4.7-6.1 8-11.3 8-6.6 0-12-5.4-12-12s5.4-12 12-12c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 12.4 3 3 12.4 3 24s9.4 21 21 21 21-9.4 21-21c0-1.4-.1-2.7-.4-3.5z"/><path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 18.9 13 24 13c3.1 0 5.8 1.1 8 3l6-6C34.5 5.1 29.5 3 24 3 16.3 3 9.7 7.3 6.3 14.7z"/><path fill="#4CAF50" d="M24 45c5.4 0 10.3-1.9 14-5.1l-6.5-5.5C29.5 36.1 26.9 37 24 37c-5.2 0-9.6-3.3-11.3-8l-6.6 5.1C9.6 40.6 16.3 45 24 45z"/><path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-.8 2.3-2.2 4.2-4.1 5.6l6.5 5.5C41.6 36 45 30.6 45 24c0-1.4-.1-2.7-.4-3.5z"/></svg>
+        Continuer avec Google
+      </button>
+      <div class="bc-auth-divider">— ou avec un e-mail —</div>
+
+      <input id="auth-email" type="email" placeholder="Adresse e-mail" class="bc-profil-input">
+      <input id="auth-password" type="password" placeholder="Mot de passe (6 caractères min.)" class="bc-profil-input" style="margin-top:10px">
+      <div class="bc-auth-error" id="auth-error" style="display:none"></div>
+
+      <button class="bc-instr-start-btn" id="auth-submit-btn" style="position:static;margin-top:16px">Se connecter</button>
+      <button class="bc-auth-switch" id="auth-switch-btn">Pas encore de compte ? Créer un compte</button>
+      <button class="bc-back-btn bc-instr-back" data-nav="scr-profil">← Continuer en invité</button>
     </div>
   </div>
 
@@ -1379,8 +1467,35 @@ const BADGES = [
    real backend; once hosted standalone, "shared" falls back to
    this browser only — see the note shown on the leaderboard screen. */
 const hasClaudeStorage = typeof window.storage !== 'undefined';
+const fbAuth = window.fbAuth || null;
+const fbDb = window.fbDb || null;
+const firebaseReady = !!(fbAuth && fbDb);
+let currentUser = null;
+let userDocCache = null;
+
+async function loadUserDoc(){
+  if (!currentUser || !firebaseReady) { userDocCache = null; return; }
+  try {
+    const snap = await fbDb.collection('users').doc(currentUser.uid).get();
+    userDocCache = snap.exists ? snap.data() : {};
+  } catch(e) { userDocCache = {}; }
+}
+async function saveUserField(key, value){
+  if (!currentUser || !firebaseReady) return null;
+  userDocCache = userDocCache || {};
+  userDocCache[key] = value;
+  try {
+    await fbDb.collection('users').doc(currentUser.uid).set({ [key]: value }, { merge: true });
+    return { key, value };
+  } catch(e) { console.warn('Firestore save failed', e); return null; }
+}
 
 async function storageGet(key, shared){
+  if (!shared && currentUser) {
+    if (!userDocCache) await loadUserDoc();
+    const value = userDocCache ? userDocCache[key] : undefined;
+    return value !== undefined && value !== null ? { key, value, shared } : null;
+  }
   if (hasClaudeStorage) {
     try { return await window.storage.get(key, shared); } catch(e) { return null; }
   }
@@ -1390,6 +1505,9 @@ async function storageGet(key, shared){
   } catch(e) { return null; }
 }
 async function storageSet(key, value, shared){
+  if (!shared && currentUser) {
+    return await saveUserField(key, value);
+  }
   if (hasClaudeStorage) {
     try { return await window.storage.set(key, value, shared); } catch(e) { return null; }
   }
@@ -1425,6 +1543,8 @@ function updateSoundToggleUI(){
   if (btn) btn.textContent = soundEnabled ? '🔊' : '🔇';
 }
 
+/* ================= AUTHENTICATION (moved below, after `app` is defined) ================= */
+
 function refreshHomeStats(){
   app.querySelector('#stat-completed').textContent = profile.completed;
   app.querySelector('#stat-best').textContent = Math.round(profile.completed ? profile.avgScore : 0) + '%';
@@ -1434,6 +1554,116 @@ function refreshHomeStats(){
 
 /* ================= NAVIGATION ================= */
 const app = document.getElementById('app');
+
+let authMode = 'login'; // 'login' or 'signup'
+
+function updateAccountBoxUI(){
+  const guestBox = app.querySelector('#account-box-guest');
+  const connectedBox = app.querySelector('#account-box-connected');
+  if (currentUser) {
+    guestBox.style.display = 'none';
+    connectedBox.style.display = 'block';
+    app.querySelector('#account-email').textContent = currentUser.email || 'Compte Google';
+  } else {
+    guestBox.style.display = 'block';
+    connectedBox.style.display = 'none';
+  }
+}
+
+app.querySelector('#go-auth-btn').addEventListener('click', () => {
+  authMode = 'login';
+  refreshAuthScreenText();
+  app.querySelector('#auth-error').style.display = 'none';
+  nav('scr-auth');
+});
+app.querySelector('#logout-btn').addEventListener('click', async () => {
+  if (fbAuth) await fbAuth.signOut();
+});
+
+function refreshAuthScreenText(){
+  app.querySelector('#auth-title').textContent = authMode === 'login' ? 'Connexion' : 'Créer un compte';
+  app.querySelector('#auth-submit-btn').textContent = authMode === 'login' ? 'Se connecter' : 'Créer mon compte';
+  app.querySelector('#auth-switch-btn').textContent = authMode === 'login'
+    ? "Pas encore de compte ? Créer un compte"
+    : "Déjà un compte ? Se connecter";
+}
+app.querySelector('#auth-switch-btn').addEventListener('click', () => {
+  authMode = authMode === 'login' ? 'signup' : 'login';
+  refreshAuthScreenText();
+  app.querySelector('#auth-error').style.display = 'none';
+});
+
+function showAuthError(msg){
+  const box = app.querySelector('#auth-error');
+  box.textContent = msg;
+  box.style.display = 'block';
+}
+const AUTH_ERROR_MESSAGES = {
+  'auth/invalid-email': "Adresse e-mail invalide.",
+  'auth/missing-password': "Merci d'indiquer un mot de passe.",
+  'auth/weak-password': "Mot de passe trop court (6 caractères minimum).",
+  'auth/email-already-in-use': "Un compte existe déjà avec cet e-mail. Essaie de te connecter.",
+  'auth/invalid-credential': "E-mail ou mot de passe incorrect.",
+  'auth/user-not-found': "Aucun compte avec cet e-mail. Crée un compte d'abord.",
+  'auth/wrong-password': "Mot de passe incorrect.",
+  'auth/popup-closed-by-user': "Connexion Google annulée.",
+  'auth/network-request-failed': "Problème de connexion internet.",
+};
+function friendlyAuthError(err){
+  return AUTH_ERROR_MESSAGES[err.code] || "Une erreur est survenue. Réessaie.";
+}
+
+app.querySelector('#auth-submit-btn').addEventListener('click', async () => {
+  if (!firebaseReady) { showAuthError("Service de connexion indisponible pour le moment. Réessaie plus tard."); return; }
+  const email = app.querySelector('#auth-email').value.trim();
+  const password = app.querySelector('#auth-password').value;
+  app.querySelector('#auth-error').style.display = 'none';
+  if (!email || !password) { showAuthError("Remplis l'e-mail et le mot de passe."); return; }
+  try {
+    if (authMode === 'login') {
+      await fbAuth.signInWithEmailAndPassword(email, password);
+    } else {
+      await fbAuth.createUserWithEmailAndPassword(email, password);
+    }
+    nav('scr-profil');
+  } catch(e) {
+    showAuthError(friendlyAuthError(e));
+  }
+});
+
+app.querySelector('#google-signin-btn').addEventListener('click', async () => {
+  if (!firebaseReady) { showAuthError("Service de connexion indisponible pour le moment. Réessaie plus tard."); return; }
+  const provider = new firebase.auth.GoogleAuthProvider();
+  try {
+    await fbAuth.signInWithPopup(provider);
+    nav('scr-profil');
+  } catch(e) {
+    showAuthError(friendlyAuthError(e));
+  }
+});
+
+if (firebaseReady) {
+  fbAuth.onAuthStateChanged(async (user) => {
+    currentUser = user;
+    userDocCache = null;
+    updateAccountBoxUI();
+    if (user) {
+      await loadUserDoc();
+      profile = Object.assign(
+        { completed: 0, perfects: 0, totalScorePercent: 0, avgScore: 0, categoriesPlayed: {}, modesPlayed: [], unlockedBadges: [], maxStreak: 0 },
+        userDocCache && userDocCache.bc_profile ? JSON.parse(userDocCache.bc_profile) : {}
+      );
+      premiumUnlocked = !!(userDocCache && userDocCache.bc_premium_unlocked === 'true');
+      if (userDocCache && userDocCache.bc_playername) {
+        app.querySelector('#pseudo-input').value = userDocCache.bc_playername;
+        app.querySelector('#profil-pseudo-input').value = userDocCache.bc_playername;
+      }
+      refreshHomeStats();
+      renderCategories();
+    }
+  });
+}
+
 function nav(screenId){
   app.querySelectorAll('.bc-screen').forEach(s => s.classList.remove('active'));
   app.querySelector('#' + screenId).classList.add('active');
@@ -2224,6 +2454,22 @@ async function publishScore(){
   publishBtn.textContent = 'Publication...';
   await storageSet('bc_playername', name, false);
   app.querySelector('#profil-pseudo-input').value = name;
+
+  if (currentUser && firebaseReady) {
+    try {
+      await fbDb.collection('leaderboard').doc(currentUser.uid).set({
+        name, points: lastResultEntry.points, pct: lastResultEntry.pct,
+        category: lastResultEntry.category, mode: lastResultEntry.mode, date: lastResultEntry.date,
+      });
+      publishBtn.textContent = '✅ Score publié dans le vrai classement !';
+    } catch(e) {
+      publishBtn.textContent = 'Échec — réessaie';
+      publishBtn.disabled = false;
+    }
+    return;
+  }
+
+  // Guest fallback: local-only leaderboard
   let arr = [];
   const res = await storageGet('leaderboard_top', true);
   if (res && res.value) { try { arr = JSON.parse(res.value); } catch(e){} }
@@ -2232,7 +2478,7 @@ async function publishScore(){
   arr = arr.slice(0, 20);
   const saved = await storageSet('leaderboard_top', JSON.stringify(arr), true);
   if (saved) {
-    publishBtn.textContent = '✅ Score publié !';
+    publishBtn.textContent = '✅ Score publié (localement — connecte-toi pour le vrai classement)';
   } else {
     publishBtn.textContent = 'Échec — réessaie';
     publishBtn.disabled = false;
@@ -2242,13 +2488,31 @@ async function publishScore(){
 async function loadLeaderboard(){
   const list = app.querySelector('#lb-list');
   const note = app.querySelector('#lb-note-text');
+  list.innerHTML = '<div class="bc-lb-empty">Chargement…</div>';
+
+  if (firebaseReady) {
+    try {
+      const snap = await fbDb.collection('leaderboard').orderBy('points', 'desc').limit(20).get();
+      const arr = snap.docs.map(d => d.data());
+      if (note) note.textContent = 'Classement réel, partagé entre tous les joueurs connectés de Bible Challenge.';
+      renderLeaderboardList(arr);
+      return;
+    } catch(e) {
+      console.warn('Firestore leaderboard failed, falling back to local', e);
+    }
+  }
+
   if (note) note.textContent = hasClaudeStorage
     ? 'Classement partagé entre tous les joueurs qui testent ce lien depuis Claude. Les pseudos publiés sont visibles de tous.'
-    : 'Classement local à cet appareil et ce navigateur (les scores publiés depuis un autre téléphone/ordinateur n\'apparaissent pas ici — un vrai classement commun à tous les visiteurs demande un petit serveur partagé).';
-  list.innerHTML = '<div class="bc-lb-empty">Chargement…</div>';
+    : 'Classement local à cet appareil (connecte-toi pour rejoindre le vrai classement partagé).';
   let arr = [];
   const res = await storageGet('leaderboard_top', true);
   if (res && res.value) { try { arr = JSON.parse(res.value); } catch(e){} }
+  renderLeaderboardList(arr);
+}
+
+function renderLeaderboardList(arr){
+  const list = app.querySelector('#lb-list');
   if (!arr.length) {
     list.innerHTML = '<div class="bc-lb-empty">Personne n\'a encore publié de score.<br>Sois le premier ! 🏆</div>';
     return;
